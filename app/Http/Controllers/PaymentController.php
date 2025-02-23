@@ -6,6 +6,14 @@ use Illuminate\Http\Request;
 use App\Models\Payment; // Assuming you have a Payment model
 use Yabacon\Paystack;
 
+/**
+ * @OA\Info(title="JaraMarket API", version="1.0")
+ * @OA\Server(url="http://localhost:8000")
+ * @OA\PathItem(
+ *     path="/orders",
+ *     description="Operations related to orders"
+ * )
+ */
 class PaymentController extends Controller
 {
     /**
