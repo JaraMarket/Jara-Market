@@ -12,6 +12,7 @@ use App\Http\Controllers\FranchiseController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\API\CustomerController;
 
 /*
 |--------------------------------------------------------------------------
@@ -62,3 +63,8 @@ Route::post('/foods', [FoodController::class, 'store']);
 
 Route::get('/reports/orders', [ReportController::class, 'orderReport']);
 Route::get('/reports/payments', [ReportController::class, 'paymentReport']);
+
+
+
+Route::post('/registerCustomer', [CustomerController::class, 'Customer_Register']);
+Route::post('/validateCustomerSignupOtp', [CustomerController::class, 'validateCustomerRegisterOTP']);
