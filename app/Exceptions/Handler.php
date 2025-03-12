@@ -27,4 +27,19 @@ class Handler extends ExceptionHandler
             //
         });
     }
+
+    // In app/Exceptions/Handler.php for Laravel
+    public function render($request, Throwable $exception)
+    {
+        if ($exception instanceof \ErrorException && strpos($exception->getMessage(), 'Array to string conversion') !== false) {
+            dd([
+                'message' => $exception->getMessage(),
+                'file' => $exception->getFile(),
+                'line' => $exception->getLine(),
+                'trace' => $exception->getTraceAsString()
+            ]);
+        }
+
+        return parent::render($request, $exception);
+    }
 }
