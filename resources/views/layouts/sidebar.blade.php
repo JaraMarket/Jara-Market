@@ -137,18 +137,7 @@
                                 <span class="ml-4">Settings</span>
                             </a>
                         </li>
-                        <li>
-                            <a class="inline-flex items-center w-full px-4 py-2 mt-1 text-base text-white transition duration-500 ease-in-out transform {{ request()->routeIs('reports*') ? 'bg-indigo-600' : 'hover:bg-indigo-600' }} rounded-lg focus:shadow-outline"
-                                href="{{ route('reports.orders') }}">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                                    </path>
-                                </svg>
-                                <span class="ml-4">Reports</span>
-                            </a>
-                        </li>
+
                     </ul>
                 </nav>
             </div>

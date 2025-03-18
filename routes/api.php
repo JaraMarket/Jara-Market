@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
@@ -9,10 +10,10 @@ use App\Http\Controllers\FoodController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\WalletController;
 use App\Http\Controllers\FranchiseController;
-use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\API\CustomerController;
+use App\Http\Controllers\ReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -55,6 +56,7 @@ Route::get('/settings', [SettingsController::class, 'index']);
 Route::post('/settings', [SettingsController::class, 'store']);
 
 Route::get('/categories', [CategoryController::class, 'index']);
+Route::get('/categories', [CategoryController::class, 'index']);
 Route::post('/categories', [CategoryController::class, 'store']);
 Route::put('/categories/{id}', [CategoryController::class, 'update']);
 Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
@@ -66,5 +68,13 @@ Route::get('/reports/payments', [ReportController::class, 'paymentReport']);
 
 
 
+
 Route::post('/registerCustomer', [CustomerController::class, 'Customer_Register']);
 Route::post('/validateCustomerSignupOtp', [CustomerController::class, 'validateCustomerRegisterOTP']);
+Route::post('/login', [CustomerController::class, 'Customer_login']);
+Route::post('/validateCustomerLoginOtp', [CustomerController::class, 'validateCustomerLoginOTP']);
+Route::get('/fetchProfile/{email}', [CustomerController::class, 'fetchProfile']);
+Route::post('/edit-profile/{email}', [CustomerController::class, 'editProfile']);
+Route::get('/fetch-foodCategory', [FoodController::class, 'fetchfoodCategory']);
+Route::post('/fetch-ingredient', [FoodController::class, 'fetchingredient']);
+Route::get('/fetch-food', [FoodController::class, 'fetchfood']);

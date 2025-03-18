@@ -67,7 +67,21 @@ class OrderController extends Controller
     }
 
     /**
-     * Cancel the specified order.
+     * @OA\Post(
+     *     path="/orders/{id}/cancel",
+     *     summary="Cancel an order",
+     *     tags={"Orders"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Order ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(response=200, description="Order canceled successfully"),
+     *     @OA\Response(response=400, description="Order cannot be canceled"),
+     *     @OA\Response(response=404, description="Order not found")
+     * )
      */
     public function cancel(string $id)
     {
@@ -86,7 +100,20 @@ class OrderController extends Controller
     }
 
     /**
-     * Display the specified order summary.
+     * @OA\Get(
+     *     path="/orders/{id}",
+     *     summary="Get order details",
+     *     tags={"Orders"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Order ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(response=200, description="Order details"),
+     *     @OA\Response(response=404, description="Order not found")
+     * )
      */
     public function show(string $id)
     {
@@ -96,7 +123,20 @@ class OrderController extends Controller
     }
 
     /**
-     * Display the specified order receipt.
+     * @OA\Get(
+     *     path="/orders/{id}/receipt",
+     *     summary="Get order receipt",
+     *     tags={"Orders"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Order ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(response=200, description="Order receipt"),
+     *     @OA\Response(response=404, description="Order not found")
+     * )
      */
     public function receipt(string $id)
     {
@@ -123,7 +163,20 @@ class OrderController extends Controller
     }
 
     /**
-     * Display the tracking information for the specified order.
+     * @OA\Get(
+     *     path="/orders/{id}/track",
+     *     summary="Get order tracking information",
+     *     tags={"Orders"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Order ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(response=200, description="Order tracking information"),
+     *     @OA\Response(response=404, description="Order not found")
+     * )
      */
     public function track(string $id)
     {
@@ -141,7 +194,20 @@ class OrderController extends Controller
     }
 
     /**
-     * Display a listing of the orders for a specific user.
+     * @OA\Get(
+     *     path="/orders/user/{userId}",
+     *     summary="Get all orders for a specific user",
+     *     tags={"Orders"},
+     *     @OA\Parameter(
+     *         name="userId",
+     *         in="path",
+     *         required=true,
+     *         description="User ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(response=200, description="List of user's orders"),
+     *     @OA\Response(response=404, description="User not found")
+     * )
      */
     public function userOrders(string $userId)
     {
@@ -150,11 +216,44 @@ class OrderController extends Controller
         return response()->json($orders, 200);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/orders",
+     *     summary="Get all orders",
+     *     tags={"Orders"},
+     *     @OA\Response(response=200, description="List of all orders",
+     *         @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Order"))
+     *     )
+     * )
+     */
     public function index()
     {
         return Order::all();
     }
 
+    /**
+     * @OA\Put(
+     *     path="/orders/{id}",
+     *     summary="Update order status",
+     *     tags={"Orders"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Order ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"status"},
+     *             @OA\Property(property="status", type="string", example="processing")
+     *         )
+     *     ),
+     *     @OA\Response(response=200, description="Order updated successfully"),
+     *     @OA\Response(response=404, description="Order not found")
+     * )
+     */
     public function update(Request $request, $id)
     {
         $order = Order::findOrFail($id);
@@ -164,6 +263,22 @@ class OrderController extends Controller
         return response()->json(['message' => 'Order updated successfully']);
     }
 
+    /**
+     * @OA\Delete(
+     *     path="/orders/{id}",
+     *     summary="Delete an order",
+     *     tags={"Orders"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Order ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(response=200, description="Order deleted successfully"),
+     *     @OA\Response(response=404, description="Order not found")
+     * )
+     */
     public function destroy($id)
     {
         $order = Order::findOrFail($id);
