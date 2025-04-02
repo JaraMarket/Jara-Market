@@ -16,6 +16,7 @@ class CreateProductsTable extends Migration
             $table->decimal('discount_price', 10, 2)->nullable();
             $table->integer('stock')->default(0);
             $table->float('rating')->nullable();
+            $table->string('image_url')->nullable();
             $table->timestamps();
         });
     }

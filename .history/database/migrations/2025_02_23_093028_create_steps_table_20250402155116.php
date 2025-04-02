@@ -15,7 +15,7 @@ class CreateStepsTable extends Migration
     {
         Schema::create('steps', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('product_id')->constrained()->onDelete('cascade');
+            $table->foreignId('food_id')->constrained()->onDelete('cascade');
             $table->text('description');
             $table->timestamps();
         });

@@ -19,7 +19,6 @@ return new class extends Migration
             $table->string('password');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('wallet')->default('0');
             $table->string('referral_code')->nullable();
             $table->foreignId('referrer_id')->nullable()->constrained()->onDelete('cascade');
             $table->integer('referral_count')->default(0);
