@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('state_representatives', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+        Schema::create('user_otps', function (Blueprint $table) {
+            $table->id(); // Auto-incrementing primary key
+            $table->string('otp');
+            $table->string('user_id');
+            $table->timestamps(); // created_at and updated_at columns
         });
     }
 
@@ -22,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('state_representatives');
+        Schema::dropIfExists('customer_otps');
     }
 };

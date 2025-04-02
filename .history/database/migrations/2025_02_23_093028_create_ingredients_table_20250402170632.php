@@ -22,6 +22,12 @@ class CreateIngredientsTable extends Migration
             $table->string('image_url')->nullable();
             $table->timestamps();
 
+
+            $table->id();
+            $table->string('name');
+            $table->decimal('price', 10, 2);
+            $table->string('image')->nullable();
+            $table->timestamps();
         });
     }
 

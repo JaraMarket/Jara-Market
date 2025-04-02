@@ -1,15 +1,14 @@
 <?php
 
-// app/Models/API/Ingredient.php
-
 namespace App\Models\API;
 
+use App\Models\Product;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Notifications\Notifiable;
 
-class Ingredient extends Model
+class Category extends Model
 {
     use HasFactory;
     protected $guarded = [];
@@ -17,6 +16,6 @@ class Ingredient extends Model
 
     public function foods()
     {
-        return $this->belongsToMany(Food::class);
+        return $this->hasMany(Product::class);
     }
 }

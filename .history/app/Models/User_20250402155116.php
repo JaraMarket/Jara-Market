@@ -20,14 +20,9 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'firstname',
-        'lastname',
-        'password',
+        'name',
         'email',
-        'role',
-        'referral_code',
-        'referrer_id',
-        'referral_count'
+        'password',
     ];
 
     /**
@@ -56,9 +51,5 @@ class User extends Authenticatable
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
-    }
-    public function referrer()
-    {
-        return $this->belongsTo(self::class, 'referrer_id');
     }
 }

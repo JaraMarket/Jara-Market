@@ -26,8 +26,10 @@ class User extends Authenticatable
         'email',
         'role',
         'referral_code',
-        'referrer_id',
-        'referral_count'
+         'role',
+            'role',
+               'role',
+               'role',
     ];
 
     /**

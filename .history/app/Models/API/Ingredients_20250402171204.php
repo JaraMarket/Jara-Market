@@ -1,21 +1,22 @@
 <?php
 
-namespace App\Models;
+// app/Models/API/Ingredient.php
 
-use App\Models\Product;
+namespace App\Models\API;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Notifications\Notifiable;
 
-class Category extends Model
+class Ingredient extends Model
 {
-    use HasApiTokens, HasFactory, Notifiable;
-
+    use HasFactory;
     protected $guarded = [];
+    use HasApiTokens, HasFactory, Notifiable;
 
     public function products()
     {
-    return $this->hasMany(Product::class);
+        return $this->belongsToMany(Pr::class);
     }
 }

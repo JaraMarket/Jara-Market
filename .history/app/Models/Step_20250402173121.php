@@ -12,10 +12,10 @@ class Step extends Model
     protected $fillable = ['product_id', 'description'];
 
     /**
-     * Get the product that owns the step.
+     * Get the food that owns the step.
      */
     public function product()
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(Pro::class);
     }
 }

@@ -2,23 +2,20 @@
 
 namespace App\Models\API;
 
+use App\Models\Product;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Notifications\Notifiable;
-use App\Models\API\Category;
 
-class Food extends Model
+class Ingredient extends Model
 {
     use HasFactory;
-    protected $table = 'foods';
     protected $guarded = [];
     use HasApiTokens, HasFactory, Notifiable;
 
-    
-    public function ingredients()
+    public function products()
     {
-        return $this->belongsToMany(Ingredient::class);
+        return $this->belongsToMany(Product::class);
     }
-
 }

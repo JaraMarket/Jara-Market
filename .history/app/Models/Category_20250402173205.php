@@ -11,7 +11,6 @@ use Illuminate\Notifications\Notifiable;
 class Category extends Model
 {
     use HasApiTokens, HasFactory, Notifiable;
-
     protected $guarded = [];
 
     public function products()

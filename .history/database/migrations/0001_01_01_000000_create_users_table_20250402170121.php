@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('role')->default('customer');
             $table->timestamp('email_verified_at')->nullable();
             $table->string('referral_code')->nullable();
-            $table->foreignId('referrer_id')->nullable()->constrained('users')->onDelete('cascade');
+            $table->foreignId('referrer_id')->nullable()->constrained('referrers')->onDelete('cascade');
             $table->integer('referral_count')->default(0);
             $table->timestamps();
         });

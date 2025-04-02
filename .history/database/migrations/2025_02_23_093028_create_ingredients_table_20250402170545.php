@@ -17,11 +17,16 @@ class CreateIngredientsTable extends Migration
             $table->id();
             $table->foreignId('product_id')->constrained()->onDelete('cascade');
             $table->string('name');
-            $table->string('qty');
-            $table->text('description')->nullable();
-            $table->string('image_url')->nullable();
+            $table->string('quantity');
             $table->timestamps();
 
+
+            $table->id();
+            $table->string('name');
+            $table->decimal('price', 10, 2);
+            $table->text('description')->nullable();
+            $table->string('image')->nullable();
+            $table->timestamps();
         });
     }
 

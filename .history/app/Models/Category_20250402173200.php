@@ -1,19 +1,21 @@
 <?php
-namespace App\Models\API;
 
+namespace App\Models;
+
+use App\Models\Product;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Notifications\Notifiable;
 
-class Customer extends Model
+class Category extends Model
 {
     use HasFactory;
     protected $guarded = [];
     use HasApiTokens, HasFactory, Notifiable;
 
-    public function referrer()
+    public function products()
     {
-        return $this->belongsTo(self::class, 'referrer_id');
+    return $this->hasMany(Product::class);
     }
 }

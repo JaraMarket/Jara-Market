@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\API;
 
 use App\Models\Product;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,12 +10,12 @@ use Illuminate\Notifications\Notifiable;
 
 class Category extends Model
 {
-    use HasApiTokens, HasFactory, Notifiable;
-
+    use HasFactory;
     protected $guarded = [];
+    use HasApiTokens, HasFactory, Notifiable;
 
     public function products()
     {
-    return $this->hasMany(Product::class);
+        return $this->hasMany(Product::class);
     }
 }

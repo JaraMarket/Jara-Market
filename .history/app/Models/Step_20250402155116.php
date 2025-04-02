@@ -9,13 +9,13 @@ class Step extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['product_id', 'description'];
+    protected $fillable = ['food_id', 'description'];
 
     /**
-     * Get the product that owns the step.
+     * Get the food that owns the step.
      */
-    public function product()
+    public function food()
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(Food::class);
     }
 }
