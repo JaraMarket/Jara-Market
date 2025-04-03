@@ -48,9 +48,6 @@ Route::delete('/orders/{id}', [OrderController::class, 'destroy']);
 Route::get('/franchises', [FranchiseController::class, 'index']);
 
 
-Route::post('/foods', [FoodController::class, 'store']);
-
-
 Route::get('/settings', [SettingsController::class, 'index']);
 Route::post('/settings', [SettingsController::class, 'store']);
 
@@ -79,6 +76,6 @@ Route::delete('/users/{id}', [UserController::class, 'destroy']);
 
 
 //product i.e food
-Route::get('/fetch-ProductCategory', [ProductController::class, 'fetchProductCategory']);
+Route::get('/fetch-foodCategory', [ProductController::class, 'fetchfoodCategory']);
 Route::post('/fetch-ingredient', [ProductController::class, 'fetchingredient']);
-Route::get('/fetch-Product', [ProductController::class, 'fetchProduct']);
+Route::get('/fetch-food', [ProductController::class, 'fetchfood']);

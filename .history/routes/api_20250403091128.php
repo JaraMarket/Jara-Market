@@ -6,8 +6,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\FoodController;
-use App\Http\Controllers\API\ProductController;
+use App\Http\Controllers\API\FoodController;
+use App\Http\Controllers\API\FoodController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\WalletController;
 use App\Http\Controllers\FranchiseController;
@@ -48,9 +48,6 @@ Route::delete('/orders/{id}', [OrderController::class, 'destroy']);
 Route::get('/franchises', [FranchiseController::class, 'index']);
 
 
-Route::post('/foods', [FoodController::class, 'store']);
-
-
 Route::get('/settings', [SettingsController::class, 'index']);
 Route::post('/settings', [SettingsController::class, 'store']);
 
@@ -79,6 +76,7 @@ Route::delete('/users/{id}', [UserController::class, 'destroy']);
 
 
 //product i.e food
-Route::get('/fetch-ProductCategory', [ProductController::class, 'fetchProductCategory']);
-Route::post('/fetch-ingredient', [ProductController::class, 'fetchingredient']);
-Route::get('/fetch-Product', [ProductController::class, 'fetchProduct']);
+Route::get('/fetch-foodCategory', [FoodController::class, 'fetchfoodCategory']);
+Route::post('/fetch-ingredient', [FoodController::class, 'fetchingredient']);
+Route::get('/fetch-food', [FoodController::class, 'fetchfood']);
+Route::post('/foods', [FoodController::class, 'store']);

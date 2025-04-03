@@ -7,12 +7,12 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\FoodController;
-use App\Http\Controllers\API\ProductController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\WalletController;
 use App\Http\Controllers\FranchiseController;
 use App\Http\Controllers\SettingsController;
-use App\Http\Controllers\API\UserController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\API\CustomerController;
 use App\Http\Controllers\ReportController;
 
 /*
@@ -48,9 +48,6 @@ Route::delete('/orders/{id}', [OrderController::class, 'destroy']);
 Route::get('/franchises', [FranchiseController::class, 'index']);
 
 
-Route::post('/foods', [FoodController::class, 'store']);
-
-
 Route::get('/settings', [SettingsController::class, 'index']);
 Route::post('/settings', [SettingsController::class, 'store']);
 
@@ -60,17 +57,19 @@ Route::post('/categories', [CategoryController::class, 'store']);
 Route::put('/categories/{id}', [CategoryController::class, 'update']);
 Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
 
+Route::post('/foods', [FoodController::class, 'store']);
 
 Route::get('/reports/orders', [ReportController::class, 'orderReport']);
 Route::get('/reports/payments', [ReportController::class, 'paymentReport']);
 
 // user i.e customer
-Route::post('/registerUser', [UserController::class, 'User_Register']);
-Route::post('/validateUserSignupOtp', [UserController::class, 'validateUserRegisterOTP']);
-Route::post('/login', [UserController::class, 'User_login']);
-Route::post('/validateUserLoginOtp', [UserController::class, 'validateUserLoginOTP']);
+
+Route::post('/registerUser', [UserController::class, 'Customer_Register']);
+Route::post('/validateUserSignupOtp', [UserController::class, 'validateCustomerRegisterOTP']);
+Route::post('/login', [UserController::class, 'Customer_login']);
+Route::post('/validateUserLoginOtp', [UserController::class, 'validateCustomerLoginOTP']);
 Route::get('/fetchProfile/{email}', [UserController::class, 'fetchProfile']);
-Route::post('/edit-profile/{email}', [UserController::class, 'editProfile']);
+Route::post('/edit-profile/{email}', [CustomerController::class, 'editProfile']);
 
 Route::get('/users', [UserController::class, 'index']);
 Route::put('/users/{id}', [UserController::class, 'update']);
@@ -78,7 +77,7 @@ Route::patch('/users/{id}/toggle-status', [UserController::class, 'toggleStatus'
 Route::delete('/users/{id}', [UserController::class, 'destroy']);
 
 
-//product i.e food
-Route::get('/fetch-ProductCategory', [ProductController::class, 'fetchProductCategory']);
-Route::post('/fetch-ingredient', [ProductController::class, 'fetchingredient']);
-Route::get('/fetch-Product', [ProductController::class, 'fetchProduct']);
+
+Route::get('/fetch-foodCategory', [FoodController::class, 'fetchfoodCategory']);
+Route::post('/fetch-ingredient', [FoodController::class, 'fetchingredient']);
+Route::get('/fetch-food', [FoodController::class, 'fetchfood']);
