@@ -16,6 +16,7 @@ use App\Mail\UserLoginOtp;
 use Illuminate\Support\Facades\Cache;
 use App\Models\User_otp;
 use App\Models\Wallet;
+use Illuminate\Support\Str;
 
 /**
  * @OA\Info(title="JaraMarket API", version="1.0")
@@ -39,7 +40,8 @@ class UserController extends Controller
             'lastname' => $request->lastname,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'referral_code' => substr(str_shuffle('0123456789'), 0, 4)
+            'role' => 'customer',
+            'referral_code' => Str::random(10)
         ]);
 
         // Create a wallet for the user
@@ -142,9 +144,8 @@ class UserController extends Controller
             // 'otp' => $otp,
             'email' => $user->email,
             'user_id' => $user->id,
-            'name' => $user->firstname,
+            'firstname' => $user->firstname,
             'lastname' => $user->lastname,
-            'email' => $user->email,
         ];
 
         // Create a Sanctum token
@@ -289,7 +290,12 @@ class UserController extends Controller
     public function update(Request $request, $id)
     {
         $user = User::findOrFail($id);
-        $user->update($request->all());
+        $user->update([
+            'firstname' => $request->firstname ?? $user->firstname,
+            'lastname' => $request->lastname ?? $user->lastname,
+            'email' => $request->email ?? $user->email,
+            'role' => $request->role ?? $user->role
+        ]);
 
         return response()->json(['message' => 'User updated successfully']);
     }
@@ -313,7 +319,7 @@ class UserController extends Controller
     public function toggleStatus($id)
     {
         $user = User::findOrFail($id);
-        $user->active = !$user->active;
+        $user->is_active = !$user->is_active;
         $user->save();
 
         return response()->json(['message' => 'User status updated successfully']);

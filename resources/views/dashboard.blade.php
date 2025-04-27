@@ -28,7 +28,7 @@
                 </div>
                 <div class="bg-gray-50 px-5 py-3">
                     <div class="text-sm">
-                        <a href="{{ route('orders.index') }}" class="font-medium text-indigo-600 hover:text-indigo-500">View
+                        <a href="{{ route('orders.index') }}" class="font-medium text-green-600 hover:text-green-500">View
                             all</a>
                     </div>
                 </div>
@@ -60,7 +60,7 @@
                 <div class="bg-gray-50 px-5 py-3">
                     <div class="text-sm">
                         <a href="{{ route('reports.orders') }}"
-                            class="font-medium text-indigo-600 hover:text-indigo-500">View report</a>
+                            class="font-medium text-green-600 hover:text-green-500">View report</a>
                     </div>
                 </div>
             </div>
@@ -88,7 +88,7 @@
                 </div>
                 <div class="bg-gray-50 px-5 py-3">
                     <div class="text-sm">
-                        <a href="{{ route('users.index') }}" class="font-medium text-indigo-600 hover:text-indigo-500">View
+                        <a href="{{ route('users.index') }}" class="font-medium text-green-600 hover:text-green-500">View
                             all</a>
                     </div>
                 </div>
@@ -119,7 +119,7 @@
                 <div class="bg-gray-50 px-5 py-3">
                     <div class="text-sm">
                         <a href="{{ route('products.index') }}"
-                            class="font-medium text-indigo-600 hover:text-indigo-500">View all</a>
+                            class="font-medium text-green-600 hover:text-green-500">View all</a>
                     </div>
                 </div>
             </div>
@@ -134,7 +134,7 @@
                         <p class="mt-1 max-w-2xl text-sm text-gray-500">Latest orders from your customers.</p>
                     </div>
                     <a href="{{ route('orders.index') }}"
-                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                         View All Orders
                     </a>
                 </div>
@@ -183,7 +183,7 @@
                                     {{ $order->status === 'completed'
                                         ? 'bg-green-100 text-green-800'
                                         : ($order->status === 'processing'
-                                            ? 'bg-blue-100 text-blue-800'
+                                            ? 'bg-green-100 text-green-800'
                                             : ($order->status === 'cancelled'
                                                 ? 'bg-red-100 text-red-800'
                                                 : 'bg-yellow-100 text-yellow-800')) }}">
@@ -192,7 +192,7 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <a href="{{ route('orders.show', $order) }}"
-                                            class="text-indigo-600 hover:text-indigo-900">View</a>
+                                            class="text-green-600 hover:text-green-900">View</a>
                                     </td>
                                 </tr>
                             @empty
@@ -212,14 +212,14 @@
         <!-- Chart Section -->
         <div class="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-2">
             <!-- Sales Chart -->
-            <div class="bg-white overflow-hidden shadow rounded-lg">
+            <!-- <div class="bg-white overflow-hidden shadow rounded-lg">
                 <div class="px-4 py-5 sm:p-6">
                     <h3 class="text-lg leading-6 font-medium text-gray-900">Sales Overview</h3>
                     <div class="mt-2 h-64">
                         <canvas id="salesChart"></canvas>
                     </div>
                 </div>
-            </div>
+            </div> -->
 
             <!-- Popular Products -->
             <div class="bg-white overflow-hidden shadow rounded-lg">
@@ -238,30 +238,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         // Sales Chart
-        const salesCtx = document.getElementById('salesChart').getContext('2d');
-        const salesChart = new Chart(salesCtx, {
-            type: 'line',
-            data: {
-                labels: {!! json_encode($salesChartData['labels']) !!},
-                datasets: [{
-                    label: 'Sales',
-                    data: {!! json_encode($salesChartData['data']) !!},
-                    backgroundColor: 'rgba(79, 70, 229, 0.2)',
-                    borderColor: 'rgba(79, 70, 229, 1)',
-                    borderWidth: 2,
-                    tension: 0.3
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
 
         // Products Chart
         const productsCtx = document.getElementById('productsChart').getContext('2d');

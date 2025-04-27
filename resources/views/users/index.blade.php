@@ -13,7 +13,7 @@
                 <div class="flex space-x-3">
                     <div class="relative">
                         <select id="status-filter"
-                            class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                            class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm rounded-md">
                             <option value="">All Users</option>
                             <option value="active">Active</option>
                             <option value="inactive">Inactive</option>
@@ -21,7 +21,7 @@
                     </div>
                     <div class="relative">
                         <input type="text" id="search" name="search" placeholder="Search users..."
-                            class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md">
+                            class="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md">
                     </div>
                 </div>
             </div>
@@ -59,7 +59,7 @@
                                     <div class="flex items-center">
                                         <div class="flex-shrink-0 h-10 w-10">
                                             <img class="h-10 w-10 rounded-full"
-                                                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                                                src="https://e7.pngegg.com/pngimages/84/165/png-clipart-united-states-avatar-organization-information-user-avatar-service-computer-wallpaper-thumbnail.png"
                                                 alt="">
                                         </div>
                                         <div class="ml-4">
@@ -81,8 +81,8 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <a href="{{ route('users.edit', $user) }}"
-                                        class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
-                                    {{-- <button type="button" class="text-indigo-600 hover:text-indigo-900 mr-3 status-toggle"
+                                        class="text-green-600 hover:text-green-900 mr-3">Edit</a>
+                                    {{-- <button type="button" class="text-green-600 hover:text-green-900 mr-3 status-toggle"
                                         data-user-id="{{ $user->id }}"
                                         data-status="{{ $user->active ? 'active' : 'inactive' }}">
                                         {{ $user->active ? 'Deactivate' : 'Activate' }}
@@ -143,7 +143,7 @@
                             Delete
                         </button>
                         <button type="button"
-                            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm close-modal">
+                            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm close-modal">
                             Cancel
                         </button>
                     </div>

@@ -243,7 +243,7 @@
                                                 <div class="flex flex-wrap gap-1">
                                                     @forelse($product->categories as $category)
                                                         <span
-                                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                                             {{ $category->name }}
                                                         </span>
                                                     @empty
@@ -290,7 +290,7 @@
                                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                 <div class="flex justify-end space-x-2">
                                                     <a href="{{ route('products.edit', $product) }}"
-                                                        class="text-indigo-600 hover:text-indigo-900">
+                                                        class="text-green-600 hover:text-green-900">
                                                         <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg"
                                                             viewBox="0 0 20 20" fill="currentColor">
                                                             <path

@@ -14,9 +14,9 @@ class StateRepresentative extends Model
         'email',
         'phone',
         'state',
+        'lga',
         'address',
-        'is_active',
-        'user_id'
+        'is_active'
     ];
 
     protected $casts = [

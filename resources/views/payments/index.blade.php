@@ -40,7 +40,7 @@
                     </div>
 
                     <div class="md:col-span-4 flex justify-end space-x-4">
-                        <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">
+                        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
                             Filter Results
                         </button>
                         {{-- <a href="{{ route('payments.export') }}"
@@ -112,7 +112,7 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <a href="{{ route('payments.show', $payment) }}"
-                                                class="text-indigo-600 hover:text-indigo-900">View Details</a>
+                                                class="text-green-600 hover:text-green-900">View Details</a>
                                         </td>
                                     </tr>
                                 @empty

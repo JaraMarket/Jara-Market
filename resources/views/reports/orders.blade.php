@@ -178,7 +178,7 @@
                 <div class="bg-white overflow-hidden shadow rounded-lg">
                     <div class="px-4 py-5 sm:p-6">
                         <div class="flex items-center">
-                            <div class="flex-shrink-0 bg-indigo-500 rounded-md p-3">
+                            <div class="flex-shrink-0 bg-green-500 rounded-md p-3">
                                 <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
                                     viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -357,7 +357,7 @@
                                                 @php
                                                     $statusColors = [
                                                         'pending' => 'bg-yellow-100 text-yellow-800',
-                                                        'processing' => 'bg-blue-100 text-blue-800',
+                                                        'processing' => 'bg-green-100 text-green-800',
                                                         'shipped' => 'bg-purple-100 text-purple-800',
                                                         'delivered' => 'bg-green-100 text-green-800',
                                                         'cancelled' => 'bg-red-100 text-red-800',
@@ -381,7 +381,7 @@
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                 <a href="{{ route('orders.show', $order) }}"
-                                                    class="text-indigo-600 hover:text-indigo-900">
+                                                    class="text-green-600 hover:text-green-900">
                                                     View
                                                 </a>
                                             </td>

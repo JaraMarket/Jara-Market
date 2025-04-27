@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redirect;
 
 /**
  * @OA\Info(title="JaraMarket API", version="1.0")
@@ -42,7 +43,8 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        return Category::all()->with('products');
+        $categories = Category::withCount('products')->latest()->paginate(10);
+        return view('categories.index', compact('categories'));
     }
 
     /** 
@@ -79,9 +81,13 @@ class CategoryController extends Controller
      */
     public function show($id)
     {
-        $category = Category::findOrFail($id);
+        $category = Category::with('products')->findOrFail($id);
+        
+        if (request()->wantsJson()) {
+            return response()->json($category);
+        }
 
-        return response()->json($category->with('products')->get());
+        return view('categories.show', compact('category'));
     }
     
     /**
@@ -119,9 +125,19 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
-        $category = Category::create($request->all());
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:categories',
+            'description' => 'nullable|string'
+        ]);
 
-        return response()->json($category, 201);
+        $category = Category::create($validated);
+
+        if ($request->wantsJson()) {
+            return response()->json($category, 201);
+        }
+
+        return redirect()->route('categories.index')
+            ->with('success', 'Category created successfully.');
     }
 
     /**
@@ -166,9 +182,20 @@ class CategoryController extends Controller
     public function update(Request $request, $id)
     {
         $category = Category::findOrFail($id);
-        $category->update($request->all());
 
-        return response()->json(['message' => 'Category updated successfully']);
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:categories,name,' . $category->id,
+            'description' => 'nullable|string'
+        ]);
+
+        $category->update($validated);
+
+        if ($request->wantsJson()) {
+            return response()->json(['message' => 'Category updated successfully']);
+        }
+
+        return redirect()->route('categories.index')
+            ->with('success', 'Category updated successfully.');
     }
 
     /**
@@ -204,6 +231,22 @@ class CategoryController extends Controller
         $category = Category::findOrFail($id);
         $category->delete();
 
-        return response()->json(['message' => 'Category deleted successfully']);
+        if (request()->wantsJson()) {
+            return response()->json(['message' => 'Category deleted successfully']);
+        }
+
+        return redirect()->route('categories.index')
+            ->with('success', 'Category deleted successfully.');
+    }
+
+    public function create()
+    {
+        return view('categories.create');
+    }
+
+    public function edit($id)
+    {
+        $category = Category::findOrFail($id);
+        return view('categories.edit', compact('category'));
     }
 }

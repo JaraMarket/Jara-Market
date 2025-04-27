@@ -8,7 +8,7 @@
             <div class="mb-4 flex justify-between items-center">
                 <h2 class="text-2xl font-bold">State Representatives</h2>
                 <a href="{{ route('representatives.create') }}"
-                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
+                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700">
                     <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -63,7 +63,7 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <a href="{{ route('representatives.edit', $representative) }}"
-                                                class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
+                                                class="text-green-600 hover:text-green-900 mr-3">Edit</a>
 
                                             <form action="{{ route('representatives.toggle-status', $representative) }}"
                                                 method="POST" class="inline">

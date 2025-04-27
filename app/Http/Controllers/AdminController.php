@@ -2,18 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Admin;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Support\Str;
 
 class AdminController extends Controller
 {
     public function index()
     {
-        $admins = Admin::latest()->paginate(10);
+        $admins = User::where('role', 'admin')->latest()->paginate(10);
         return view('admin.index', compact('admins'));
     }
 
@@ -25,46 +25,47 @@ class AdminController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:admins'],
+            'firstname' => ['required', 'string', 'max:255'],
+            'lastname' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', Password::defaults()],
-            'phone' => ['required', 'string', 'max:20'],
         ]);
 
-        $admin = Admin::create([
-            'name' => $validated['name'],
+        $admin = User::create([
+            'firstname' => $validated['firstname'],
+            'lastname' => $validated['lastname'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
-            'phone' => $validated['phone'],
-            'is_active' => true,
+            'role' => 'admin',
+            'referral_code' => Str::random(10),
         ]);
 
         return redirect()->route('admin.index')
             ->with('success', 'Admin created successfully');
     }
 
-    public function show(Admin $admin)
+    public function show(User $admin)
     {
         return view('admin.show', compact('admin'));
     }
 
-    public function edit(Admin $admin)
+    public function edit(User $admin)
     {
         return view('admin.edit', compact('admin'));
     }
 
-    public function update(Request $request, Admin $admin)
+    public function update(Request $request, User $admin)
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:admins,email,' . $admin->id],
-            'phone' => ['required', 'string', 'max:20'],
+            'firstname' => ['required', 'string', 'max:255'],
+            'lastname' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $admin->id],
             'password' => ['nullable', Password::defaults()],
         ]);
 
-        $admin->name = $validated['name'];
+        $admin->firstname = $validated['firstname'];
+        $admin->lastname = $validated['lastname'];
         $admin->email = $validated['email'];
-        $admin->phone = $validated['phone'];
 
         if (!empty($validated['password'])) {
             $admin->password = Hash::make($validated['password']);
@@ -76,14 +77,14 @@ class AdminController extends Controller
             ->with('success', 'Admin updated successfully');
     }
 
-    public function destroy(Admin $admin)
+    public function destroy(User $admin)
     {
         $admin->delete();
         return redirect()->route('admin.index')
             ->with('success', 'Admin deleted successfully');
     }
 
-    public function toggleStatus(Admin $admin)
+    public function toggleStatus(User $admin)
     {
         $admin->is_active = !$admin->is_active;
         $admin->save();
@@ -100,12 +101,12 @@ class AdminController extends Controller
 
     public function updateProfile(Request $request)
     {
-        $admin = User::find(Auth::id());
+        $admin = auth()->user();
 
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:admins,email,' . $admin->id],
-            'phone' => ['required', 'string', 'max:20'],
+            'firstname' => ['required', 'string', 'max:255'],
+            'lastname' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $admin->id],
             'current_password' => ['nullable', 'required_with:new_password'],
             'new_password' => ['nullable', Password::defaults()],
         ]);
@@ -117,9 +118,9 @@ class AdminController extends Controller
             $admin->password = Hash::make($validated['new_password']);
         }
 
-        $admin->name = $validated['name'];
+        $admin->firstname = $validated['firstname'];
+        $admin->lastname = $validated['lastname'];
         $admin->email = $validated['email'];
-        $admin->phone = $validated['phone'];
         $admin->save();
 
         return redirect()->route('admin.profile')

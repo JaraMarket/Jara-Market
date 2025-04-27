@@ -59,9 +59,9 @@
                 <form method="POST" action="{{ route('register') }}">
                     @csrf
 
-                    <!-- Name -->
+                    <!-- First Name -->
                     <div class="mb-6">
-                        <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                        <label for="firstname" class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -70,10 +70,27 @@
                                         d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                 </svg>
                             </div>
-                            <input id="name" name="name" type="text" value="{{ old('name') }}" required
+                            <input id="firstname" name="firstname" type="text" value="{{ old('firstname') }}" required
                                 autofocus
                                 class="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition duration-150 ease-in-out"
-                                placeholder="John Doe">
+                                placeholder="John">
+                        </div>
+                    </div>
+
+                    <!-- Last Name -->
+                    <div class="mb-6">
+                        <label for="lastname" class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                            </div>
+                            <input id="lastname" name="lastname" type="text" value="{{ old('lastname') }}" required
+                                class="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition duration-150 ease-in-out"
+                                placeholder="Doe">
                         </div>
                     </div>
 

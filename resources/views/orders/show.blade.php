@@ -7,7 +7,7 @@
         <!-- Back button -->
         <div class="mb-5">
             <a href="{{ route('orders.index') }}"
-                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                 <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -23,22 +23,31 @@
                     <p class="mt-1 max-w-2xl text-sm text-gray-500">{{ $order->created_at->format('F d, Y h:i A') }}</p>
                 </div>
                 <div>
-                    <span
-                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                    {{ $order->status === 'completed'
-                        ? 'bg-green-100 text-green-800'
-                        : ($order->status === 'processing'
-                            ? 'bg-blue-100 text-blue-800'
-                            : ($order->status === 'cancelled'
-                                ? 'bg-red-100 text-red-800'
-                                : 'bg-yellow-100 text-yellow-800')) }}">
-                        {{ ucfirst($order->status) }}
-                    </span>
-                    <button type="button"
-                        class="ml-3 inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 status-change"
-                        data-order-id="{{ $order->id }}">
-                        Change Status
-                    </button>
+                    <form action="{{ route('orders.update.status', $order) }}" method="POST" class="flex items-center space-x-4">
+                        @csrf
+                        @method('PATCH')
+                        <div class="flex items-center space-x-4">
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="status" value="pending" {{ $order->status === 'pending' ? 'checked' : '' }}
+                                    class="form-radio h-4 w-4 text-yellow-600 border-gray-300 focus:ring-yellow-500">
+                                <span class="ml-2 text-sm text-gray-700">Pending</span>
+                            </label>
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="status" value="in_progress" {{ $order->status === 'in_progress' ? 'checked' : '' }}
+                                    class="form-radio h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                                <span class="ml-2 text-sm text-gray-700">In Progress</span>
+                            </label>
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="status" value="completed" {{ $order->status === 'completed' ? 'checked' : '' }}
+                                    class="form-radio h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
+                                <span class="ml-2 text-sm text-gray-700">Completed</span>
+                            </label>
+                        </div>
+                        <button type="submit"
+                            class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Update Status
+                        </button>
+                    </form>
                 </div>
             </div>
             <div class="border-t border-gray-200">
@@ -90,7 +99,13 @@
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        @foreach ($order->orderItems as $item)
+                        @php
+                            \Log::info('Order items:', ['items' => $order->items->toArray()]);
+                        @endphp
+                        @foreach ($order->items as $item)
+                            @php
+                                \Log::info('Order item:', ['item' => $item->toArray(), 'product' => $item->product ? $item->product->toArray() : null]);
+                            @endphp
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
@@ -137,81 +152,33 @@
     </div>
 @endsection
 
-@section('modals')
-    <!-- Status Change Modal (same as in index.blade.php) -->
-    <div id="status-modal" class="fixed inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog"
-        aria-modal="true">
-        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div
-                class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                <form id="status-form" action="{{ route('orders.update.status') }}" method="POST">
-                    @csrf
-                    @method('PATCH')
-                    <input type="hidden" name="order_id" id="order_id">
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                        <div class="sm:flex sm:items-start">
-                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                                <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
-                                    Update Order Status
-                                </h3>
-                                <div class="mt-4">
-                                    <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
-                                    <select id="status" name="status"
-                                        class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                                        <option value="pending">Pending</option>
-                                        <option value="processing">Processing</option>
-                                        <option value="completed">Completed</option>
-                                        <option value="cancelled">Cancelled</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                        <button type="submit"
-                            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
-                            Update
-                        </button>
-                        <button type="button"
-                            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm close-modal">
-                            Cancel
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-@endsection
-
-@section('scripts')
+@push('scripts')
     <script>
-        // Status change modal functionality (same as in index.blade.php)
-        const statusModal = document.getElementById('status-modal');
-        const statusButtons = document.querySelectorAll('.status-change');
-        const closeButtons = document.querySelectorAll('.close-modal');
-        const orderIdInput = document.getElementById('order_id');
+        document.addEventListener('DOMContentLoaded', function() {
+            const statusModal = document.getElementById('status-modal');
+            const statusButtons = document.querySelectorAll('.status-change');
+            const closeButtons = document.querySelectorAll('.close-modal');
 
-        statusButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const orderId = button.getAttribute('data-order-id');
-                orderIdInput.value = orderId;
-                statusModal.classList.remove('hidden');
+            // Show modal when clicking Change Status button
+            statusButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    statusModal.classList.remove('hidden');
+                });
             });
-        });
 
-        closeButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                statusModal.classList.add('hidden');
+            // Hide modal when clicking close button or outside the modal
+            closeButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    statusModal.classList.add('hidden');
+                });
             });
-        });
 
-        // Close modal when clicking outside
-        window.addEventListener('click', (e) => {
-            if (e.target === statusModal) {
-                statusModal.classList.add('hidden');
-            }
+            // Hide modal when clicking outside
+            window.addEventListener('click', (e) => {
+                if (e.target === statusModal) {
+                    statusModal.classList.add('hidden');
+                }
+            });
         });
     </script>
-@endsection
+@endpush

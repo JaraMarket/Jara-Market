@@ -7,7 +7,7 @@
         <!-- Back button -->
         <div class="mb-5">
             <a href="{{ route('users.index') }}"
-                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                 <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -31,7 +31,7 @@
                             <div class="col-span-6 sm:col-span-3">
                                 <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
                                 <input type="text" name="name" id="name" value="{{ old('name', $user->name) }}"
-                                    class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                    class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
                                 @error('name')
                                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
@@ -40,7 +40,7 @@
                             <div class="col-span-6 sm:col-span-3">
                                 <label for="email" class="block text-sm font-medium text-gray-700">Email address</label>
                                 <input type="email" name="email" id="email" value="{{ old('email', $user->email) }}"
-                                    class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                    class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
                                 @error('email')
                                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
@@ -49,7 +49,7 @@
                             <div class="col-span-6 sm:col-span-3">
                                 <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
                                 <input type="password" name="password" id="password"
-                                    class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                                    class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                                     placeholder="Leave blank to keep current password">
                                 @error('password')
                                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
@@ -60,13 +60,13 @@
                                 <label for="password_confirmation" class="block text-sm font-medium text-gray-700">Confirm
                                     Password</label>
                                 <input type="password" name="password_confirmation" id="password_confirmation"
-                                    class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                    class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
                             </div>
 
                             <div class="col-span-6 sm:col-span-3">
                                 <label for="active" class="block text-sm font-medium text-gray-700">Status</label>
                                 <select id="active" name="active"
-                                    class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                    class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
                                     <option value="1" {{ old('active', $user->active) ? 'selected' : '' }}>Active
                                     </option>
                                     <option value="0" {{ old('active', $user->active) ? '' : 'selected' }}>Inactive
@@ -81,7 +81,7 @@
 
                     <div class="px-4 py-3 bg-gray-50 text-right sm:px-6">
                         <button type="submit"
-                            class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                             Save Changes
                         </button>
                     </div>
@@ -134,7 +134,7 @@
                                 {{ $order->status === 'completed'
                                     ? 'bg-green-100 text-green-800'
                                     : ($order->status === 'processing'
-                                        ? 'bg-blue-100 text-blue-800'
+                                        ? 'bg-green-100 text-green-800'
                                         : ($order->status === 'cancelled'
                                             ? 'bg-red-100 text-red-800'
                                             : 'bg-yellow-100 text-yellow-800')) }}">
@@ -143,7 +143,7 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <a href="{{ route('orders.show', $order) }}"
-                                        class="text-indigo-600 hover:text-indigo-900">View</a>
+                                        class="text-green-600 hover:text-green-900">View</a>
                                 </td>
                             </tr>
                         @empty
@@ -183,14 +183,14 @@
                                         Name</label>
                                     <input type="text" name="settings[site_name]" id="site_name"
                                         value="{{ $settings['site_name'] ?? '' }}"
-                                        class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                        class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
                                 </div>
 
                                 <div>
                                     <label for="site_description" class="block text-sm font-medium text-gray-700">Site
                                         Description</label>
                                     <textarea name="settings[site_description]" id="site_description" rows="3"
-                                        class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">{{ $settings['site_description'] ?? '' }}</textarea>
+                                        class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">{{ $settings['site_description'] ?? '' }}</textarea>
                                 </div>
 
                                 <div>
@@ -198,13 +198,13 @@
                                         Email</label>
                                     <input type="email" name="settings[contact_email]" id="contact_email"
                                         value="{{ $settings['contact_email'] ?? '' }}"
-                                        class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                        class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
                                 </div>
 
                                 <div>
                                     <label for="currency" class="block text-sm font-medium text-gray-700">Currency</label>
                                     <select id="currency" name="settings[currency]"
-                                        class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                        class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
                                         <option value="USD"
                                             {{ ($settings['currency'] ?? '') == 'USD' ? 'selected' : '' }}>USD ($)</option>
                                         <option value="EUR"
@@ -217,7 +217,7 @@
                         </div>
                         <div class="px-4 py-3 bg-gray-50 text-right sm:px-6">
                             <button type="submit" name="section" value="general"
-                                class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                                 Save General Settings
                             </button>
                         </div>
@@ -245,7 +245,7 @@
                                         </div>
                                         <input type="text" name="settings[delivery_fee]" id="delivery_fee"
                                             value="{{ $settings['delivery_fee'] ?? '0.00' }}"
-                                            class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md"
+                                            class="focus:ring-green-500 focus:border-green-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md"
                                             placeholder="0.00">
                                     </div>
                                 </div>
@@ -260,7 +260,7 @@
                                         <input type="text" name="settings[free_delivery_threshold]"
                                             id="free_delivery_threshold"
                                             value="{{ $settings['free_delivery_threshold'] ?? '50.00' }}"
-                                            class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md"
+                                            class="focus:ring-green-500 focus:border-green-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md"
                                             placeholder="0.00">
                                     </div>
                                     <p class="mt-2 text-sm text-gray-500">Orders above this amount qualify for free
@@ -271,7 +271,7 @@
                                     <div class="flex items-center h-5">
                                         <input id="enable_delivery" name="settings[enable_delivery]" type="checkbox"
                                             value="1" {{ ($settings['enable_delivery'] ?? 0) == 1 ? 'checked' : '' }}
-                                            class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                                            class="focus:ring-green-500 h-4 w-4 text-green-600 border-gray-300 rounded">
                                     </div>
                                     <div class="ml-3 text-sm">
                                         <label for="enable_delivery" class="font-medium text-gray-700">Enable
@@ -285,13 +285,13 @@
                                         Delivery Time (minutes)</label>
                                     <input type="number" name="settings[delivery_time]" id="delivery_time"
                                         value="{{ $settings['delivery_time'] ?? '30' }}"
-                                        class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                        class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
                                 </div>
                             </div>
                         </div>
                         <div class="px-4 py-3 bg-gray-50 text-right sm:px-6">
                             <button type="submit" name="section" value="delivery"
-                                class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                                 Save Delivery Settings
                             </button>
                         </div>
@@ -314,7 +314,7 @@
                                     <div class="flex items-center h-5">
                                         <input id="enable_paypal" name="settings[enable_paypal]" type="checkbox"
                                             value="1" {{ ($settings['enable_paypal'] ?? 0) == 1 ? 'checked' : '' }}
-                                            class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                                            class="focus:ring-green-500 h-4 w-4 text-green-600 border-gray-300 rounded">
                                     </div>
                                     <div class="ml-3 text-sm">
                                         <label for="enable_paypal" class="font-medium text-gray-700">Enable PayPal</label>
@@ -325,7 +325,7 @@
                                     <div class="flex items-center h-5">
                                         <input id="enable_stripe" name="settings[enable_stripe]" type="checkbox"
                                             value="1" {{ ($settings['enable_stripe'] ?? 0) == 1 ? 'checked' : '' }}
-                                            class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                                            class="focus:ring-green-500 h-4 w-4 text-green-600 border-gray-300 rounded">
                                     </div>
                                     <div class="ml-3 text-sm">
                                         <label for="enable_stripe" class="font-medium text-gray-700">Enable Stripe</label>
@@ -336,7 +336,7 @@
                                     <div class="flex items-center h-5">
                                         <input id="enable_cod" name="settings[enable_cod]" type="checkbox"
                                             value="1" {{ ($settings['enable_cod'] ?? 0) == 1 ? 'checked' : '' }}
-                                            class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                                            class="focus:ring-green-500 h-4 w-4 text-green-600 border-gray-300 rounded">
                                     </div>
                                     <div class="ml-3 text-sm">
                                         <label for="enable_cod" class="font-medium text-gray-700">Enable Cash on
@@ -349,7 +349,7 @@
                                         Client ID</label>
                                     <input type="text" name="settings[paypal_client_id]" id="paypal_client_id"
                                         value="{{ $settings['paypal_client_id'] ?? '' }}"
-                                        class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                        class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
                                 </div>
 
                                 <div>
@@ -357,13 +357,13 @@
                                         Key</label>
                                     <input type="text" name="settings[stripe_key]" id="stripe_key"
                                         value="{{ $settings['stripe_key'] ?? '' }}"
-                                        class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                        class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
                                 </div>
                             </div>
                         </div>
                         <div class="px-4 py-3 bg-gray-50 text-right sm:px-6">
                             <button type="submit" name="section" value="payment"
-                                class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                                 Save Payment Settings
                             </button>
                         </div>
@@ -387,7 +387,7 @@
                                         <input id="order_confirmation_email" name="settings[order_confirmation_email]"
                                             type="checkbox" value="1"
                                             {{ ($settings['order_confirmation_email'] ?? 1) == 1 ? 'checked' : '' }}
-                                            class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                                            class="focus:ring-green-500 h-4 w-4 text-green-600 border-gray-300 rounded">
                                     </div>
                                     <div class="ml-3 text-sm">
                                         <label for="order_confirmation_email" class="font-medium text-gray-700">Order
@@ -401,7 +401,7 @@
                                         <input id="order_status_email" name="settings[order_status_email]"
                                             type="checkbox" value="1"
                                             {{ ($settings['order_status_email'] ?? 1) == 1 ? 'checked' : '' }}
-                                            class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                                            class="focus:ring-green-500 h-4 w-4 text-green-600 border-gray-300 rounded">
                                     </div>
                                     <div class="ml-3 text-sm">
                                         <label for="order_status_email" class="font-medium text-gray-700">Order Status
@@ -415,7 +415,7 @@
                                         <input id="admin_new_order_notification"
                                             name="settings[admin_new_order_notification]" type="checkbox" value="1"
                                             {{ ($settings['admin_new_order_notification'] ?? 1) == 1 ? 'checked' : '' }}
-                                            class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                                            class="focus:ring-green-500 h-4 w-4 text-green-600 border-gray-300 rounded">
                                     </div>
                                     <div class="ml-3 text-sm">
                                         <label for="admin_new_order_notification" class="font-medium text-gray-700">Admin
@@ -429,13 +429,13 @@
                                         for Notifications</label>
                                     <input type="email" name="settings[admin_email]" id="admin_email"
                                         value="{{ $settings['admin_email'] ?? '' }}"
-                                        class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                        class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
                                 </div>
                             </div>
                         </div>
                         <div class="px-4 py-3 bg-gray-50 text-right sm:px-6">
                             <button type="submit" name="section" value="notification"
-                                class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                                 Save Notification Settings
                             </button>
                         </div>

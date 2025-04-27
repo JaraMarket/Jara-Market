@@ -5,4 +5,4 @@
 <p>Please do not share this OTP with anyone.</p>
 
 <p>Thanks</p>
-<p>{{ Config('app.name'); }} Team. </p>
+<p>{{ Config('app.name') }} Team. </p>

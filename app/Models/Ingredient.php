@@ -14,8 +14,11 @@ class Ingredient extends Model
     protected $fillable = [
         'name',
         'description',
+        'price',
+        'discounted_price',
         'unit',
-        'price_per_unit'
+        'stock',
+        'image_url'
     ];
 
     public function products()

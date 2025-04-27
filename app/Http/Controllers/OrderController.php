@@ -3,7 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\Product;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
  * @OA\Info(title="JaraMarket API", version="1.0")
@@ -35,35 +39,68 @@ class OrderController extends Controller
      */
     public function store(Request $request)
     {
-        // Validate the request data
-        $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'total' => 'required|numeric',
-            'shipping_fee' => 'nullable|numeric',
-            'status' => 'nullable|string',
-            'items' => 'required|array',
-            'items.*.product_id' => 'required|exists:products,id',
-            'items.*.quantity' => 'required|integer|min:1',
+        // Debug the incoming request
+        \Log::info('Order creation request:', [
+            'data' => $request->all(),
+            'headers' => $request->headers->all()
         ]);
 
-        // Create the order
-        $order = Order::create([
-            'user_id' => $validated['user_id'],
-            'total' => $validated['total'],
-            'shipping_fee' => $validated['shipping_fee'] ?? 0,
-            'status' => $validated['status'] ?? 'pending',
-        ]);
-
-        // Attach items to the order
-        foreach ($validated['items'] as $item) {
-            $order->items()->create([
-                'product_id' => $item['product_id'],
-                'quantity' => $item['quantity'],
-                'price' => $item['price'] ?? 0, // Assuming price is passed or calculated
+        try {
+            $validated = $request->validate([
+                'user_id' => 'required|exists:users,id',
+                'total' => 'required|numeric|min:0',
+                'meal_prep' => 'nullable|string',
+                'items' => 'required|array|min:1',
+                'items.*.product_id' => 'required|exists:products,id',
+                'items.*.quantity' => 'required|integer|min:1',
             ]);
-        }
 
-        return response()->json($order, 201);
+            \Log::info('Validation passed:', ['data' => $validated]);
+
+            // Start a database transaction
+            DB::beginTransaction();
+
+            // Create the order
+            $order = Order::create([
+                'user_id' => $validated['user_id'],
+                'total' => $validated['total'],
+                'meal_prep' => $validated['meal_prep'],
+                'status' => 'pending',
+            ]);
+
+            \Log::info('Order created:', ['order' => $order->toArray()]);
+
+            // Create order items
+            foreach ($validated['items'] as $item) {
+                if (!empty($item['product_id'])) {
+                    $product = Product::find($item['product_id']);
+                    $orderItem = $order->items()->create([
+                        'product_id' => $item['product_id'],
+                        'quantity' => $item['quantity'],
+                        'price' => $product->price,
+                    ]);
+                    \Log::info('Order item created:', ['item' => $orderItem->toArray()]);
+                }
+            }
+
+            // Commit the transaction
+            DB::commit();
+
+            \Log::info('Order creation completed successfully');
+            return redirect()->route('orders.index')
+                ->with('success', 'Order created successfully.');
+        } catch (\Exception $e) {
+            // Rollback the transaction on error
+            DB::rollBack();
+            
+            \Log::error('Order creation failed:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->withInput()
+                ->with('error', 'Failed to create order: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -254,13 +291,37 @@ class OrderController extends Controller
      *     @OA\Response(response=404, description="Order not found")
      * )
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Order $order)
     {
-        $order = Order::findOrFail($id);
-        $order->status = $request->status;
-        $order->save();
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'total_amount' => 'required|numeric|min:0',
+            'meal_prep' => 'nullable|string',
+            'status' => 'required|in:pending,processing,completed,cancelled',
+            'items' => 'required|array|min:1',
+            'items.*.product_id' => 'required|exists:products,id',
+            'items.*.quantity' => 'required|integer|min:1',
+        ]);
 
-        return response()->json(['message' => 'Order updated successfully']);
+        $order->update([
+            'user_id' => $validated['user_id'],
+            'total_amount' => $validated['total_amount'],
+            'meal_prep' => $validated['meal_prep'],
+            'status' => $validated['status'],
+        ]);
+
+        // Delete existing items
+        $order->items()->delete();
+
+        // Create new items
+        foreach ($validated['items'] as $item) {
+            $order->items()->create([
+                'product_id' => $item['product_id'],
+                'quantity' => $item['quantity'],
+            ]);
+        }
+
+        return redirect()->route('orders.index')->with('success', 'Order updated successfully.');
     }
 
     /**
@@ -285,5 +346,19 @@ class OrderController extends Controller
         $order->delete();
 
         return response()->json(['message' => 'Order deleted successfully']);
+    }
+
+    /**
+     * Update the status of an order.
+     */
+    public function updateStatus(Request $request, Order $order)
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:pending,in_progress,completed'
+        ]);
+
+        $order->update(['status' => $validated['status']]);
+
+        return redirect()->back()->with('success', 'Order status updated successfully.');
     }
 }

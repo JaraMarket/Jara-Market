@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\StateRepresentative;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class StateRepresentativeController extends Controller
 {
@@ -16,22 +18,40 @@ class StateRepresentativeController extends Controller
 
     public function create()
     {
-        $users = User::where('is_active', true)->get();
+        $users = User::get();
         return view('representatives.create', compact('users'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'unique:state_representatives'],
+            'firstname' => ['required', 'string', 'max:255'],
+            'lastname' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'unique:users'],
             'phone' => ['required', 'string', 'max:20'],
             'state' => ['required', 'string', 'max:255'],
+            'lga' => ['required', 'string', 'max:255'],
             'address' => ['required', 'string'],
-            'user_id' => ['required', 'exists:users,id']
         ]);
 
-        StateRepresentative::create($validated);
+        // Create a new user with STATE_REPRESENTATIVE role
+        $user = User::create([
+            'firstname' => $validated['firstname'],
+            'lastname' => $validated['lastname'],
+            'email' => $validated['email'],
+            'password' => Hash::make(Str::random(12)), // Generate a random password
+            'role' => 'STATE_REPRESENTATIVE',
+            'referral_code' => Str::random(10)
+        ]);
+
+        // Create the state representative
+        $representative = StateRepresentative::create([
+            'user_id' => $user->id,
+            'phone' => $validated['phone'],
+            'state' => $validated['state'],
+            'lga' => $validated['lga'],
+            'address' => $validated['address']
+        ]);
 
         return redirect()->route('representatives.index')
             ->with('success', 'State Representative created successfully');
@@ -46,15 +66,31 @@ class StateRepresentativeController extends Controller
     public function update(Request $request, StateRepresentative $representative)
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'unique:state_representatives,email,' . $representative->id],
+            'firstname' => ['required', 'string', 'max:255'],
+            'lastname' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'unique:users,email,' . $representative->user->id],
             'phone' => ['required', 'string', 'max:20'],
             'state' => ['required', 'string', 'max:255'],
+            'lga' => ['required', 'string', 'max:255'],
             'address' => ['required', 'string'],
-            'user_id' => ['required', 'exists:users,id']
         ]);
 
-        $representative->update($validated);
+        // Update the associated user
+        $user = $representative->user;
+        if ($user) {
+            $user->update([
+                'firstname' => $validated['firstname'],
+                'lastname' => $validated['lastname'],
+                'email' => $validated['email']
+            ]);
+        }
+
+        $representative->update([
+            'phone' => $validated['phone'],
+            'state' => $validated['state'],
+            'lga' => $validated['lga'],
+            'address' => $validated['address']
+        ]);
 
         return redirect()->route('representatives.index')
             ->with('success', 'State Representative updated successfully');
@@ -62,6 +98,11 @@ class StateRepresentativeController extends Controller
 
     public function destroy(StateRepresentative $representative)
     {
+        // Delete the associated user
+        if ($representative->user) {
+            $representative->user->delete();
+        }
+        
         $representative->delete();
         return redirect()->route('representatives.index')
             ->with('success', 'State Representative deleted successfully');

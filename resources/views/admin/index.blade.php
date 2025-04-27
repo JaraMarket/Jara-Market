@@ -7,7 +7,7 @@
         <div class="mb-4 flex justify-between items-center">
             <h2 class="text-2xl font-bold">Administrators</h2>
             <a href="{{ route('admin.create') }}"
-                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                 <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -61,7 +61,7 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <a href="{{ route('admin.edit', $admin) }}"
-                                    class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
+                                    class="text-green-600 hover:text-green-900 mr-3">Edit</a>
                                 <form action="{{ route('admin.toggle-status', $admin) }}" method="POST" class="inline">
                                     @csrf
                                     @method('PATCH')

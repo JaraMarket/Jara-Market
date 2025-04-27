@@ -1,7 +1,7 @@
 <!-- Sidebar -->
 <div class="hidden md:flex md:flex-shrink-0">
     <div class="flex flex-col w-64">
-        <div class="flex flex-col flex-grow pt-5 overflow-y-auto bg-indigo-700 border-r">
+        <div class="flex flex-col flex-grow pt-5 overflow-y-auto bg-green-700 border-r">
             <div class="flex flex-col items-center flex-shrink-0 px-4">
                 <a href="{{ route('dashboard') }}" class="px-8 text-left focus:outline-none">
                     <h2
@@ -10,10 +10,10 @@
                 </a>
             </div>
             <div class="flex flex-col flex-grow px-4 mt-5">
-                <nav class="flex-1 space-y-1 bg-indigo-700">
+                <nav class="flex-1 space-y-1 bg-green-700">
                     <ul>
                         <li>
-                            <a class="inline-flex items-center w-full px-4 py-2 mt-1 text-base text-white transition duration-500 ease-in-out transform {{ request()->routeIs('dashboard') ? 'bg-indigo-600' : 'hover:bg-indigo-600' }} rounded-lg focus:shadow-outline"
+                            <a class="inline-flex items-center w-full px-4 py-2 mt-1 text-base text-white transition duration-500 ease-in-out transform {{ request()->routeIs('dashboard') ? 'bg-green-600' : 'hover:bg-green-600' }} rounded-lg focus:shadow-outline"
                                 href="{{ route('dashboard') }}">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                                     xmlns="http://www.w3.org/2000/svg">
@@ -25,7 +25,7 @@
                             </a>
                         </li>
                         <li>
-                            <a class="inline-flex items-center w-full px-4 py-2 mt-1 text-base text-white transition duration-500 ease-in-out transform {{ request()->routeIs('orders*') ? 'bg-indigo-600' : 'hover:bg-indigo-600' }} rounded-lg focus:shadow-outline"
+                            <a class="inline-flex items-center w-full px-4 py-2 mt-1 text-base text-white transition duration-500 ease-in-out transform {{ request()->routeIs('orders*') ? 'bg-green-600' : 'hover:bg-green-600' }} rounded-lg focus:shadow-outline"
                                 href="{{ route('orders.index') }}">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                                     xmlns="http://www.w3.org/2000/svg">
@@ -36,7 +36,7 @@
                             </a>
                         </li>
                         <li>
-                            <a class="inline-flex items-center w-full px-4 py-2 mt-1 text-base text-white transition duration-500 ease-in-out transform {{ request()->routeIs('users*') ? 'bg-indigo-600' : 'hover:bg-indigo-600' }} rounded-lg focus:shadow-outline"
+                            <a class="inline-flex items-center w-full px-4 py-2 mt-1 text-base text-white transition duration-500 ease-in-out transform {{ request()->routeIs('users*') ? 'bg-green-600' : 'hover:bg-green-600' }} rounded-lg focus:shadow-outline"
                                 href="{{ route('users.index') }}">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                                     xmlns="http://www.w3.org/2000/svg">
@@ -47,7 +47,7 @@
                             </a>
                         </li>
                         <li>
-                            <a class="inline-flex items-center w-full px-4 py-2 mt-1 text-base text-white transition duration-500 ease-in-out transform {{ request()->routeIs('categories*') ? 'bg-indigo-600' : 'hover:bg-indigo-600' }} rounded-lg focus:shadow-outline"
+                            <a class="inline-flex items-center w-full px-4 py-2 mt-1 text-base text-white transition duration-500 ease-in-out transform {{ request()->routeIs('categories*') ? 'bg-green-600' : 'hover:bg-green-600' }} rounded-lg focus:shadow-outline"
                                 href="{{ route('categories.index') }}">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                                     xmlns="http://www.w3.org/2000/svg">
@@ -59,7 +59,7 @@
                             </a>
                         </li>
                         <li>
-                            <a class="inline-flex items-center w-full px-4 py-2 mt-1 text-base text-white transition duration-500 ease-in-out transform {{ request()->routeIs('products*') ? 'bg-indigo-600' : 'hover:bg-indigo-600' }} rounded-lg focus:shadow-outline"
+                            <a class="inline-flex items-center w-full px-4 py-2 mt-1 text-base text-white transition duration-500 ease-in-out transform {{ request()->routeIs('products*') ? 'bg-green-600' : 'hover:bg-green-600' }} rounded-lg focus:shadow-outline"
                                 href="{{ route('products.index') }}">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                                     xmlns="http://www.w3.org/2000/svg">
@@ -71,7 +71,19 @@
                             </a>
                         </li>
                         <li>
-                            <a class="inline-flex items-center w-full px-4 py-2 mt-1 text-base text-white transition duration-500 ease-in-out transform {{ request()->routeIs('reports*') ? 'bg-indigo-600' : 'hover:bg-indigo-600' }} rounded-lg focus:shadow-outline"
+                            <a class="inline-flex items-center w-full px-4 py-2 mt-1 text-base text-white transition duration-500 ease-in-out transform {{ request()->routeIs('ingredients*') ? 'bg-green-600' : 'hover:bg-green-600' }} rounded-lg focus:shadow-outline"
+                                href="{{ route('ingredients.index') }}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                    </path>
+                                </svg>
+                                <span class="ml-4">Ingredients</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="inline-flex items-center w-full px-4 py-2 mt-1 text-base text-white transition duration-500 ease-in-out transform {{ request()->routeIs('reports*') ? 'bg-green-600' : 'hover:bg-green-600' }} rounded-lg focus:shadow-outline"
                                 href="{{ route('reports.orders') }}">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                                     xmlns="http://www.w3.org/2000/svg">
@@ -84,7 +96,7 @@
                         </li>
 
                         <li>
-                            <a class="inline-flex items-center w-full px-4 py-2 mt-1 text-base text-white transition duration-500 ease-in-out transform {{ request()->routeIs('representatives*') ? 'bg-indigo-600' : 'hover:bg-indigo-600' }} rounded-lg focus:shadow-outline"
+                            <a class="inline-flex items-center w-full px-4 py-2 mt-1 text-base text-white transition duration-500 ease-in-out transform {{ request()->routeIs('representatives*') ? 'bg-green-600' : 'hover:bg-green-600' }} rounded-lg focus:shadow-outline"
                                 href="{{ route('representatives.index') }}">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                                     xmlns="http://www.w3.org/2000/svg">
@@ -96,11 +108,24 @@
                             </a>
                         </li>
 
+                        <li>
+                            <a class="inline-flex items-center w-full px-4 py-2 mt-1 text-base text-white transition duration-500 ease-in-out transform {{ request()->routeIs('vendors*') ? 'bg-green-600' : 'hover:bg-green-600' }} rounded-lg focus:shadow-outline"
+                                href="{{ route('vendors.index') }}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                                    </path>
+                                </svg>
+                                <span class="ml-4">Vendors</span>
+                            </a>
+                        </li>
+
                         <!-- ... existing sidebar items ... -->
 
                         <li>
                             <a href="{{ route('payments.index') }}"
-                                class="inline-flex items-center w-full px-4 py-2 mt-1 text-base text-white transition duration-500 ease-in-out transform {{ request()->routeIs('payments.*') ? 'bg-indigo-600' : 'hover:bg-indigo-600' }} rounded-lg focus:shadow-outline">
+                                class="inline-flex items-center w-full px-4 py-2 mt-1 text-base text-white transition duration-500 ease-in-out transform {{ request()->routeIs('payments.*') ? 'bg-green-600' : 'hover:bg-green-600' }} rounded-lg focus:shadow-outline">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -112,7 +137,7 @@
 
                         <!-- Admin Management -->
                         <li>
-                            <a class="inline-flex items-center w-full px-4 py-2 mt-1 text-base text-white transition duration-500 ease-in-out transform {{ request()->routeIs('admin*') ? 'bg-indigo-600' : 'hover:bg-indigo-600' }} rounded-lg focus:shadow-outline"
+                            <a class="inline-flex items-center w-full px-4 py-2 mt-1 text-base text-white transition duration-500 ease-in-out transform {{ request()->routeIs('admin*') ? 'bg-green-600' : 'hover:bg-green-600' }} rounded-lg focus:shadow-outline"
                                 href="{{ route('admin.index') }}">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                                     xmlns="http://www.w3.org/2000/svg">
@@ -124,7 +149,7 @@
                             </a>
                         </li>
                         <li>
-                            <a class="inline-flex items-center w-full px-4 py-2 mt-1 text-base text-white transition duration-500 ease-in-out transform {{ request()->routeIs('settings*') ? 'bg-indigo-600' : 'hover:bg-indigo-600' }} rounded-lg focus:shadow-outline"
+                            <a class="inline-flex items-center w-full px-4 py-2 mt-1 text-base text-white transition duration-500 ease-in-out transform {{ request()->routeIs('settings*') ? 'bg-green-600' : 'hover:bg-green-600' }} rounded-lg focus:shadow-outline"
                                 href="{{ route('settings.index') }}">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                                     xmlns="http://www.w3.org/2000/svg">
@@ -141,17 +166,17 @@
                     </ul>
                 </nav>
             </div>
-            <div class="flex flex-shrink-0 p-4 px-4 bg-indigo-700">
+            <div class="flex flex-shrink-0 p-4 px-4 bg-green-700">
                 <a href="#" class="flex-shrink-0 block w-full group">
                     <div class="flex items-center">
                         <div>
                             <img class="inline-block rounded-full h-9 w-9"
-                                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                                src="https://e7.pngegg.com/pngimages/84/165/png-clipart-united-states-avatar-organization-information-user-avatar-service-computer-wallpaper-thumbnail.png"
                                 alt="">
                         </div>
                         <div class="ml-3">
                             <p class="text-sm font-medium text-white">{{ Auth::user()->name }}</p>
-                            <p class="text-xs font-medium text-indigo-200 group-hover:text-white">View Profile</p>
+                            <p class="text-xs font-medium text-green-200 group-hover:text-white">View Profile</p>
                         </div>
                     </div>
                 </a>

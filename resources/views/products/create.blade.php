@@ -51,58 +51,13 @@
                                 @enderror
                             </div>
 
-                            <div class="sm:col-span-3">
-                                <label for="price" class="block text-sm font-medium text-gray-700">
-                                    Price (₦) <span class="text-red-500">*</span>
-                                </label>
-                                <div class="mt-1 relative rounded-md shadow-sm">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <span class="text-gray-500 sm:text-sm">₦</span>
-                                    </div>
-                                    <input type="number" name="price" id="price" value="{{ old('price') }}"
-                                        step="0.01" min="0" required
-                                        class="focus:ring-green-500 focus:border-green-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md @error('price') border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500 @enderror">
-                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                        <span class="text-gray-500 sm:text-sm">NGN</span>
-                                    </div>
-                                </div>
-                                @error('price')
-                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <div class="sm:col-span-3">
-                                <label for="discount_price" class="block text-sm font-medium text-gray-700">
-                                    Discount Price (₦) <span class="text-gray-400">(optional)</span>
-                                </label>
-                                <div class="mt-1 relative rounded-md shadow-sm">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <span class="text-gray-500 sm:text-sm">₦</span>
-                                    </div>
-                                    <input type="number" name="discount_price" id="discount_price"
-                                        value="{{ old('discount_price') }}" step="0.01" min="0"
-                                        class="focus:ring-green-500 focus:border-green-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md @error('discount_price') border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500 @enderror">
-                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                        <span class="text-gray-500 sm:text-sm">NGN</span>
-                                    </div>
-                                </div>
-                                @error('discount_price')
-                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <div class="sm:col-span-2">
-                                <label for="stock" class="block text-sm font-medium text-gray-700">
-                                    Stock Quantity <span class="text-red-500">*</span>
-                                </label>
+                            <!-- Price (Calculated) -->
+                            <div class="col-span-2">
+                                <label class="block text-sm font-medium text-gray-700">Calculated Price</label>
                                 <div class="mt-1">
-                                    <input type="number" name="stock" id="stock" value="{{ old('stock', 0) }}"
-                                        min="0" required
-                                        class="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md @error('stock') border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500 @enderror">
+                                    <input type="text" id="calculated_price" readonly class="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 bg-gray-50">
+                                    <p class="mt-1 text-sm text-gray-500">Price is calculated based on ingredients</p>
                                 </div>
-                                @error('stock')
-                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
                             </div>
 
                             <div class="sm:col-span-6">
@@ -124,7 +79,7 @@
                                     Categories <span class="text-red-500">*</span>
                                 </label>
                                 <div class="mt-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    @foreach (\App\Models\Category::all() as $category)
+                                    @foreach ($categories as $category)
                                         <div class="relative flex items-start">
                                             <div class="flex items-center h-5">
                                                 <input id="category-{{ $category->id }}" name="categories[]"
@@ -148,19 +103,53 @@
                                 @enderror
                             </div>
 
-                            <div class="sm:col-span-6">
-                                <label for="ingredients" class="block text-sm font-medium text-gray-700">
-                                    Ingredients <span class="text-red-500">*</span>
-                                </label>
-                                <div class="mt-1">
-                                    <textarea id="ingredients" name="ingredients" rows="4" required
-                                        class="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md @error('ingredients') border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500 @enderror"
-                                        placeholder="Enter each ingredient on a new line">{{ old('ingredients') }}</textarea>
+                            <!-- Ingredients -->
+                            <div class="col-span-2">
+                                <label class="block text-sm font-medium text-gray-700">Ingredients</label>
+                                <div id="ingredients-container" class="mt-2 space-y-4">
+                                    <div class="ingredient-item flex gap-4">
+                                        <div class="flex-1">
+                                            <select name="ingredients[0][ingredient_id]" class="ingredient-select block rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+                                                <option value="">Select Ingredient</option>
+                                                @foreach($ingredients as $ingredient)
+                                                    <option value="{{ $ingredient->id }}" 
+                                                            data-price="{{ $ingredient->price }}"
+                                                            data-unit="{{ $ingredient->unit }}">
+                                                        {{ $ingredient->name }} ({{ $ingredient->price }}/{{ $ingredient->unit }})
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="w-32">
+                                            <input type="number" name="ingredients[0][quantity]" min="0.01" step="0.01" value="1" class="quantity-input block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+                                        </div>
+                                        <div class="w-32">
+                                            <select name="ingredients[0][unit]" class="unit-select block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+                                                <option value="piece">Piece</option>
+                                                <option value="kg">Kilogram</option>
+                                                <option value="g">Gram</option>
+                                                <option value="l">Liter</option>
+                                                <option value="ml">Milliliter</option>
+                                                <option value="cup">Cup</option>
+                                                <option value="tbsp">Tablespoon</option>
+                                                <option value="tsp">Teaspoon</option>
+                                            </select>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <button type="button" class="remove-ingredient text-red-600 hover:text-red-800">
+                                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
-                                <p class="mt-2 text-sm text-gray-500">List all ingredients needed for this recipe.</p>
-                                @error('ingredients')
-                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
+                                <button type="button" id="add-ingredient" class="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                    <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                                    </svg>
+                                    Add Ingredient
+                                </button>
                             </div>
 
                             <div class="sm:col-span-6">
@@ -179,39 +168,17 @@
                             </div>
 
                             <div class="sm:col-span-6">
-                                <label for="image" class="block text-sm font-medium text-gray-700">
-                                    Product Image <span class="text-gray-400">(optional)</span>
-                                </label>
-                                <div
-                                    class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-                                    <div class="space-y-1 text-center">
-                                        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none"
-                                            viewBox="0 0 48 48" aria-hidden="true">
-                                            <path
-                                                d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                        </svg>
-                                        <div class="flex text-sm text-gray-600">
-                                            <label for="image"
-                                                class="relative cursor-pointer bg-white rounded-md font-medium text-green-600 hover:text-green-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-green-500">
-                                                <span>Upload a file</span>
-                                                <input id="image" name="image" type="file" class="sr-only"
-                                                    accept="image/*">
-                                            </label>
-                                            <p class="pl-1">or drag and drop</p>
-                                        </div>
-                                        <p class="text-xs text-gray-500">
-                                            PNG, JPG, GIF up to 2MB
-                                        </p>
+                                <label for="image" class="block text-sm font-medium text-gray-700">Image</label>
+                                <div class="mt-1 flex items-center">
+                                    <img id="image-preview" class="hidden h-32 w-32 object-cover rounded-lg" src="#" alt="Image preview">
+                                    <div class="ml-4">
+                                        <input type="file" name="image" id="image" accept="image/*" 
+                                            class="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md @error('image') border-red-500 @enderror"
+                                            onchange="previewImage(this)">
                                     </div>
                                 </div>
-                                <div class="mt-2" id="image-preview-container" style="display: none;">
-                                    <p class="text-sm font-medium text-gray-700">Preview:</p>
-                                    <img id="image-preview" src="#" alt="Image Preview"
-                                        class="mt-2 h-32 w-32 object-cover rounded-md">
-                                </div>
                                 @error('image')
-                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
                         </div>
@@ -273,6 +240,132 @@
 
                 // Additional client-side validation can be added here
             });
+
+            const ingredientsContainer = document.getElementById('ingredients-container');
+            const addIngredientButton = document.getElementById('add-ingredient');
+            const calculatedPriceInput = document.getElementById('calculated_price');
+            let ingredientCount = 1;
+
+            // Add new ingredient
+            addIngredientButton.addEventListener('click', function() {
+                const newIngredient = document.createElement('div');
+                newIngredient.className = 'ingredient-item flex gap-4 mt-4';
+                newIngredient.innerHTML = `
+                    <div class="flex-1">
+                        <select name="ingredients[${ingredientCount}][ingredient_id]" class="ingredient-select block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+                            <option value="">Select Ingredient</option>
+                            @foreach($ingredients as $ingredient)
+                                <option value="{{ $ingredient->id }}" 
+                                        data-price="{{ $ingredient->price }}"
+                                        data-unit="{{ $ingredient->unit }}">
+                                    {{ $ingredient->name }} ({{ $ingredient->price }}/{{ $ingredient->unit }})
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="w-32">
+                        <input type="number" name="ingredients[${ingredientCount}][quantity]" min="0.01" step="0.01" value="1" class="quantity-input block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+                    </div>
+                    <div class="w-32">
+                        <select name="ingredients[${ingredientCount}][unit]" class="unit-select block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+                            <option value="piece">Piece</option>
+                            <option value="kg">Kilogram</option>
+                            <option value="g">Gram</option>
+                            <option value="l">Liter</option>
+                            <option value="ml">Milliliter</option>
+                            <option value="cup">Cup</option>
+                            <option value="tbsp">Tablespoon</option>
+                            <option value="tsp">Teaspoon</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center">
+                        <button type="button" class="remove-ingredient text-red-600 hover:text-red-800">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    </div>
+                `;
+                ingredientsContainer.appendChild(newIngredient);
+                ingredientCount++;
+            });
+
+            // Remove ingredient
+            ingredientsContainer.addEventListener('click', function(e) {
+                if (e.target.closest('.remove-ingredient')) {
+                    const ingredient = e.target.closest('.ingredient-item');
+                    if (ingredientsContainer.children.length > 1) {
+                        ingredient.remove();
+                        calculatePrice();
+                    }
+                }
+            });
+
+            // Calculate price
+            function calculatePrice() {
+                let total = 0;
+                document.querySelectorAll('.ingredient-item').forEach(item => {
+                    const ingredientSelect = item.querySelector('.ingredient-select');
+                    const quantityInput = item.querySelector('.quantity-input');
+                    const unitSelect = item.querySelector('.unit-select');
+                    const selectedOption = ingredientSelect.options[ingredientSelect.selectedIndex];
+                    
+                    if (selectedOption && selectedOption.value) {
+                        const pricePerUnit = parseFloat(selectedOption.dataset.price);
+                        const baseUnit = selectedOption.dataset.unit;
+                        const quantity = parseFloat(quantityInput.value);
+                        const selectedUnit = unitSelect.value;
+                        
+                        // Convert quantity to base unit
+                        const convertedQuantity = convertToBaseUnit(quantity, selectedUnit, baseUnit);
+                        total += convertedQuantity * pricePerUnit;
+                    }
+                });
+                calculatedPriceInput.value = total.toFixed(2);
+            }
+
+            // Convert units
+            function convertToBaseUnit(quantity, fromUnit, toUnit) {
+                const conversionRates = {
+                    'kg': { 'g': 1000, 'piece': 1 },
+                    'g': { 'kg': 0.001, 'piece': 1 },
+                    'l': { 'ml': 1000, 'cup': 4, 'tbsp': 66.67, 'tsp': 200 },
+                    'ml': { 'l': 0.001, 'cup': 0.004, 'tbsp': 0.067, 'tsp': 0.2 },
+                    'cup': { 'l': 0.25, 'ml': 250, 'tbsp': 16, 'tsp': 48 },
+                    'tbsp': { 'l': 0.015, 'ml': 15, 'cup': 0.0625, 'tsp': 3 },
+                    'tsp': { 'l': 0.005, 'ml': 5, 'cup': 0.0208, 'tbsp': 0.333 },
+                    'piece': { 'kg': 1, 'g': 1 }
+                };
+
+                if (fromUnit === toUnit) return quantity;
+                if (!conversionRates[fromUnit] || !conversionRates[fromUnit][toUnit]) return quantity;
+                
+                return quantity * conversionRates[fromUnit][toUnit];
+            }
+
+            // Update price when ingredients change
+            ingredientsContainer.addEventListener('change', function(e) {
+                if (e.target.classList.contains('ingredient-select') || 
+                    e.target.classList.contains('quantity-input') || 
+                    e.target.classList.contains('unit-select')) {
+                    calculatePrice();
+                }
+            });
+
+            // Initial price calculation
+            calculatePrice();
         });
+
+        function previewImage(input) {
+            const preview = document.getElementById('image-preview');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.classList.remove('hidden');
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
     </script>
 @endpush

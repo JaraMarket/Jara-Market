@@ -21,6 +21,10 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Str;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\IngredientController;
+use App\Http\Controllers\VendorController;
+use App\Http\Controllers\OrderController;
 
 /*
 |--------------------------------------------------------------------------
@@ -66,27 +70,27 @@ Route::get('/dashboard', function () {
     $latestUsers = User::latest()->take(5)->get();
 
     // Monthly sales data for chart
-    $monthlySales = Order::selectRaw("strftime('%m', created_at) as month, SUM(total) as total")
-        ->whereRaw("strftime('%Y', created_at) = ?", [date('Y')])
-        ->groupBy('month')
-        ->orderBy('month')
-        ->get()
-        ->pluck('total', 'month')
-        ->toArray();
+    // $monthlySales = Order::selectRaw("strftime('%m', created_at) as month, SUM(total) as total")
+    //     ->whereRaw("strftime('%Y', created_at) = ?", [date('Y')])
+    //     ->groupBy('month')
+    //     ->orderBy('month')
+    //     ->get()
+    //     ->pluck('total', 'month')
+    //     ->toArray();
 
     $months = [];
     $salesData = [];
 
     for ($i = 1; $i <= 12; $i++) {
         $months[] = date('F', mktime(0, 0, 0, $i, 1));
-        $salesData[] = $monthlySales[sprintf("%02d", $i)] ?? 0;
+        // $salesData[] = $monthlySales[sprintf("%02d", $i)] ?? 0;
     }
 
     // Format data for the sales chart
-    $salesChartData = [
-        'labels' => $months,
-        'data' => $salesData
-    ];
+    // $salesChartData = [
+    //     'labels' => $months,
+    //     'data' => $salesData
+    // ];
 
     // Get top 5 products by quantity sold
     $topProducts = DB::table('order_items')
@@ -110,7 +114,7 @@ Route::get('/dashboard', function () {
         'totalCategories',
         'recentOrders',
         'latestUsers',
-        'salesChartData',
+        // 'salesChartData',
         'productsChartData'
     ));
 })->middleware('auth')->name('dashboard');
@@ -119,27 +123,28 @@ Route::get('/dashboard', function () {
 Route::prefix('orders')->middleware('auth')->group(function () {
     // List all orders
     Route::get('/', function () {
-        $orders = Order::with('user')->latest()->paginate(10);
+        $orders = Order::with(['user', 'items.product'])->latest()->paginate(10);
         return view('orders.index', compact('orders'));
     })->name('orders.index');
 
+    // Show create order form
+    Route::get('/create', function () {
+        $products = Product::all();
+        $users = User::all();
+        return view('orders.create', compact('products', 'users'));
+    })->name('orders.create');
+
+    // Store new order
+    Route::post('/', [OrderController::class, 'store'])->name('orders.store');
+
     // Show order details
     Route::get('/{order}', function (Order $order) {
-        $order->load('user', 'items.product');
+        $order->load(['user', 'items.product']);
         return view('orders.show', compact('order'));
     })->name('orders.show');
 
     // Update order status
-    Route::put('/{order}/status', function (Request $request, Order $order) {
-        $validated = $request->validate([
-            'status' => ['required', Rule::in(['pending', 'processing', 'completed', 'cancelled'])],
-        ]);
-
-        $order->update(['status' => $validated['status']]);
-
-        return redirect()->route('orders.show', $order)
-            ->with('success', 'Order status updated successfully');
-    })->name('orders.update.status');
+    Route::patch('/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.update.status');
 
     // Delete order
     Route::delete('/{order}', function (Order $order) {
@@ -165,15 +170,20 @@ Route::prefix('users')->middleware('auth')->group(function () {
     // Store new user
     Route::post('/', function (Request $request) {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'firstname' => ['required', 'string', 'max:255'],
+            'lastname' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'role' => ['required', 'string', 'in:customer,admin,state_representative,vendor'],
         ]);
 
         $user = User::create([
-            'name' => $validated['name'],
+            'firstname' => $validated['firstname'],
+            'lastname' => $validated['lastname'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
+            'role' => $validated['role'],
+            'referral_code' => Str::random(10),
         ]);
 
         return redirect()->route('users.index')
@@ -188,14 +198,18 @@ Route::prefix('users')->middleware('auth')->group(function () {
     // Update user
     Route::put('/{user}', function (Request $request, User $user) {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'firstname' => ['required', 'string', 'max:255'],
+            'lastname' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            'role' => ['required', 'string', 'in:customer,admin,state_representative,vendor'],
         ]);
 
         $userData = [
-            'name' => $validated['name'],
+            'firstname' => $validated['firstname'],
+            'lastname' => $validated['lastname'],
             'email' => $validated['email'],
+            'role' => $validated['role'],
         ];
 
         if (!empty($validated['password'])) {
@@ -230,54 +244,13 @@ Route::prefix('users')->middleware('auth')->group(function () {
 
 // Category Management Routes
 Route::prefix('categories')->middleware('auth')->group(function () {
-    // List all categories
-    Route::get('/', function () {
-        $categories = Category::withCount('products')->latest()->paginate(10);
-        return view('categories.index', compact('categories'));
-    })->name('categories.index');
-
-    // Show category create form
-    Route::get('/create', function () {
-        return view('categories.create');
-    })->name('categories.create');
-
-    // Store new category
-    Route::post('/', function (Request $request) {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255', 'unique:categories'],
-            'description' => ['nullable', 'string'],
-        ]);
-
-        Category::create($validated);
-
-        return redirect()->route('categories.index')
-            ->with('success', 'Category created successfully');
-    })->name('categories.store');
-
-    // Show category edit form
-    Route::get('/{category}/edit', function (Category $category) {
-        return view('categories.edit', compact('category'));
-    })->name('categories.edit');
-
-    // Update category
-    Route::put('/{category}', function (Request $request, Category $category) {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255', Rule::unique('categories')->ignore($category->id)],
-            'description' => ['nullable', 'string'],
-        ]);
-
-        $category->update($validated);
-
-        return redirect()->route('categories.index')
-            ->with('success', 'Category updated successfully');
-    })->name('categories.update');
-
-    // Delete category
-    Route::delete('/{category}', function (Category $category) {
-        $category->delete();
-        return redirect()->route('categories.index')
-            ->with('success', 'Category deleted successfully');
-    })->name('categories.destroy');
+    Route::get('/', [CategoryController::class, 'index'])->name('categories.index');
+    Route::get('/create', [CategoryController::class, 'create'])->name('categories.create');
+    Route::post('/', [CategoryController::class, 'store'])->name('categories.store');
+    Route::get('/{category}', [CategoryController::class, 'show'])->name('categories.show');
+    Route::get('/{category}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
+    Route::put('/{category}', [CategoryController::class, 'update'])->name('categories.update');
+    Route::delete('/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
 });
 
 // Product Management Routes
@@ -291,7 +264,8 @@ Route::prefix('products')->middleware('auth')->group(function () {
     // Show product create form
     Route::get('/create', function () {
         $categories = Category::all();
-        return view('products.create', compact('categories'));
+        $ingredients = \App\Models\Ingredient::all();
+        return view('products.create', compact('categories', 'ingredients'));
     })->name('products.create');
 
     // Store new product
@@ -299,26 +273,31 @@ Route::prefix('products')->middleware('auth')->group(function () {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'price' => ['required', 'numeric', 'min:0'],
-            'discount_price' => ['nullable', 'numeric', 'min:0'],
-            'stock' => ['required', 'integer', 'min:0'],
+            'preparation_steps' => ['required', 'string'],
             'categories' => ['required', 'array'],
             'categories.*' => ['exists:categories,id'],
-            'ingredients' => ['required', 'string'],
-            'preparation_steps' => ['required', 'string'],
+            'ingredients' => ['required', 'array'],
+            'ingredients.*.ingredient_id' => ['required', 'exists:ingredients,id'],
+            'ingredients.*.quantity' => ['required', 'numeric', 'min:0.01'],
+            'ingredients.*.unit' => ['required', 'string']
         ]);
 
         $product = Product::create([
             'name' => $validated['name'],
             'description' => $validated['description'],
-            'price' => $validated['price'],
-            'discount_price' => $validated['discount_price'],
-            'stock' => $validated['stock'],
-            'ingredients' => $validated['ingredients'],
-            'preparation_steps' => $validated['preparation_steps'],
+            'preparation_steps' => $validated['preparation_steps']
         ]);
 
+        // Attach categories
         $product->categories()->attach($validated['categories']);
+
+        // Attach ingredients with pivot data
+        foreach ($validated['ingredients'] as $ingredient) {
+            $product->ingredients()->attach($ingredient['ingredient_id'], [
+                'quantity' => $ingredient['quantity'],
+                'unit' => $ingredient['unit']
+            ]);
+        }
 
         return redirect()->route('products.index')
             ->with('success', 'Product created successfully');
@@ -326,7 +305,6 @@ Route::prefix('products')->middleware('auth')->group(function () {
 
     // Show product edit form
     Route::get('/{product}/edit', function (Product $product) {
-        $categories = Category::all();
         $product->load('categories');
         return view('products.edit', compact('product', 'categories'));
     })->name('products.edit');
@@ -670,7 +648,8 @@ Route::prefix('profile')->middleware('auth')->group(function () {
         $user = Auth::user();
 
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'firstname' => ['required', 'string', 'max:255'],
+            'lastname' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'current_password' => ['nullable', 'required_with:password', function ($attribute, $value, $fail) use ($user) {
                 if (!Hash::check($value, $user->password)) {
@@ -681,7 +660,8 @@ Route::prefix('profile')->middleware('auth')->group(function () {
         ]);
 
         $userData = [
-            'name' => $validated['name'],
+            'firstname' => $validated['firstname'],
+            'lastname' => $validated['lastname'],
             'email' => $validated['email'],
         ];
 
@@ -689,7 +669,7 @@ Route::prefix('profile')->middleware('auth')->group(function () {
             $userData['password'] = Hash::make($validated['password']);
         }
 
-        User::where('id', $user->id)->update($userData);
+        $user->update($userData);
 
         return redirect()->route('profile.index')
             ->with('success', 'Profile updated successfully');
@@ -722,28 +702,30 @@ Route::post('/login', function (Request $request) {
 // Registration Routes
 Route::get('/register', function () {
     return view('auth.register');
-})->middleware('guest')->name('register');
+})->middleware('guest')->name('register.show');
 
 Route::post('/register', function (Request $request) {
     $validated = $request->validate([
-        'name' => ['required', 'string', 'max:255'],
+        'firstname' => ['required', 'string', 'max:255'],
+        'lastname' => ['required', 'string', 'max:255'],
         'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
         'password' => ['required', 'string', 'min:8', 'confirmed'],
-        'terms' => ['required', 'accepted'],
     ]);
 
     $user = User::create([
-        'name' => $validated['name'],
+        'firstname' => $validated['firstname'],
+        'lastname' => $validated['lastname'],
         'email' => $validated['email'],
         'password' => Hash::make($validated['password']),
+        'role' => 'customer',
+        'referral_code' => Str::random(10),
     ]);
 
     event(new Registered($user));
-
     Auth::login($user);
 
-    return redirect('dashboard');
-})->middleware('guest');
+    return redirect()->route('dashboard');
+})->middleware('guest')->name('register');
 
 // Logout Route
 Route::post('/logout', function (Request $request) {
@@ -853,4 +835,19 @@ Route::prefix('representatives')->middleware('auth')->group(function () {
     Route::put('/{representative}', [StateRepresentativeController::class, 'update'])->name('representatives.update');
     Route::delete('/{representative}', [StateRepresentativeController::class, 'destroy'])->name('representatives.destroy');
     Route::patch('/{representative}/toggle-status', [StateRepresentativeController::class, 'toggleStatus'])->name('representatives.toggle-status');
+});
+
+Route::resource('ingredients', IngredientController::class);
+
+// Vendor Routes
+Route::prefix('vendors')->middleware('auth')->group(function () {
+    Route::get('/', [VendorController::class, 'index'])->name('vendors.index');
+    Route::get('/create', [VendorController::class, 'create'])->name('vendors.create');
+    Route::post('/', [VendorController::class, 'store'])->name('vendors.store');
+    Route::get('/{vendor}', [VendorController::class, 'show'])->name('vendors.show');
+    Route::get('/{vendor}/edit', [VendorController::class, 'edit'])->name('vendors.edit');
+    Route::put('/{vendor}', [VendorController::class, 'update'])->name('vendors.update');
+    Route::delete('/{vendor}', [VendorController::class, 'destroy'])->name('vendors.destroy');
+    Route::patch('/{vendor}/toggle-status', [VendorController::class, 'toggleStatus'])->name('vendors.toggle-status');
+    Route::patch('/{vendor}/toggle-verification', [VendorController::class, 'toggleVerification'])->name('vendors.toggle-verification');
 });
