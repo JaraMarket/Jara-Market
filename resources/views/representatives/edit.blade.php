@@ -1,0 +1,42 @@
+class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300
+rounded-md">{{ old('address', $representative->address) }}</textarea>
+@error('address')
+    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+@enderror
+</div>
+
+<div class="col-span-6 sm:col-span-3">
+    <label for="state" class="block text-sm font-medium text-gray-700">State</label>
+    <input type="text" name="state" id="state" value="{{ old('state', $representative->state) }}"
+        class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+    @error('state')
+        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+    @enderror
+</div>
+
+<div class="col-span-6 sm:col-span-3">
+    <label for="lga" class="block text-sm font-medium text-gray-700">Local Government Area</label>
+    <input type="text" name="lga" id="lga" value="{{ old('lga', $representative->lga) }}"
+        class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+    @error('lga')
+        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+    @enderror
+</div>
+</div>
+
+<div class="mt-6 flex items-center justify-end">
+    <a href="{{ route('representatives.index') }}"
+        class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50">
+        Cancel
+    </a>
+    <button type="submit"
+        class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700">
+        Update Representative
+    </button>
+</div>
+</form>
+</div>
+</div>
+</div>
+</div>
+@endsection

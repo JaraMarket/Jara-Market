@@ -1,0 +1,633 @@
+openapi: 3.0.3
+info:
+  title: 'Laravel API Documentation'
+  description: ''
+  version: 1.0.0
+servers:
+  -
+    url: 'http://localhost'
+tags:
+  -
+    name: Endpoints
+    description: ''
+paths:
+  /api/user:
+    get:
+      summary: ''
+      operationId: getApiUser
+      description: ''
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: Unauthenticated.
+                properties:
+                  message:
+                    type: string
+                    example: Unauthenticated.
+      tags:
+        - Endpoints
+      security: []
+  /api/orders:
+    post:
+      summary: ''
+      operationId: postApiOrders
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: string
+                  description: 'The <code>id</code> of an existing record in the users table.'
+                  example: consequatur
+                  nullable: false
+                total:
+                  type: number
+                  description: ''
+                  example: 11613.31890586
+                  nullable: false
+                shipping_fee:
+                  type: number
+                  description: ''
+                  example: 11613.31890586
+                  nullable: true
+                status:
+                  type: string
+                  description: ''
+                  example: consequatur
+                  nullable: true
+                items:
+                  type: array
+                  description: ''
+                  example:
+                    - []
+                  items:
+                    type: object
+                    properties:
+                      product_id:
+                        type: string
+                        description: 'The <code>id</code> of an existing record in the products table.'
+                        example: consequatur
+                        nullable: false
+                      quantity:
+                        type: integer
+                        description: 'Must be at least 1.'
+                        example: 45
+                        nullable: false
+                    required:
+                      - product_id
+                      - quantity
+              required:
+                - user_id
+                - total
+                - items
+      security: []
+    get:
+      summary: ''
+      operationId: getApiOrders
+      description: ''
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                example: []
+      tags:
+        - Endpoints
+      security: []
+  '/api/orders/{id}/cancel':
+    post:
+      summary: 'Cancel the specified order.'
+      operationId: cancelTheSpecifiedOrder
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      security: []
+    parameters:
+      -
+        in: path
+        name: id
+        description: 'The ID of the order.'
+        example: consequatur
+        required: true
+        schema:
+          type: string
+  '/api/carts/{id}':
+    get:
+      summary: 'Display the specified cart.'
+      operationId: displayTheSpecifiedCart
+      description: ''
+      parameters: []
+      responses:
+        404:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'No query results for model [App\Models\Cart] consequatur'
+                properties:
+                  message:
+                    type: string
+                    example: 'No query results for model [App\Models\Cart] consequatur'
+      tags:
+        - Endpoints
+      security: []
+    parameters:
+      -
+        in: path
+        name: id
+        description: 'The ID of the cart.'
+        example: consequatur
+        required: true
+        schema:
+          type: string
+  '/api/orders/{id}':
+    get:
+      summary: 'Display the specified order summary.'
+      operationId: displayTheSpecifiedOrderSummary
+      description: ''
+      parameters: []
+      responses:
+        404:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'No query results for model [App\Models\Order] consequatur'
+                properties:
+                  message:
+                    type: string
+                    example: 'No query results for model [App\Models\Order] consequatur'
+      tags:
+        - Endpoints
+      security: []
+    put:
+      summary: ''
+      operationId: putApiOrdersId
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      security: []
+    delete:
+      summary: ''
+      operationId: deleteApiOrdersId
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      security: []
+    parameters:
+      -
+        in: path
+        name: id
+        description: 'The ID of the order.'
+        example: consequatur
+        required: true
+        schema:
+          type: string
+  '/api/orders/{id}/receipt':
+    get:
+      summary: 'Display the specified order receipt.'
+      operationId: displayTheSpecifiedOrderReceipt
+      description: ''
+      parameters: []
+      responses:
+        404:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'No query results for model [App\Models\Order] 17'
+                properties:
+                  message:
+                    type: string
+                    example: 'No query results for model [App\Models\Order] 17'
+      tags:
+        - Endpoints
+      security: []
+    parameters:
+      -
+        in: path
+        name: id
+        description: 'The ID of the order.'
+        example: 17
+        required: true
+        schema:
+          type: integer
+  '/api/orders/{id}/track':
+    get:
+      summary: 'Display the tracking information for the specified order.'
+      operationId: displayTheTrackingInformationForTheSpecifiedOrder
+      description: ''
+      parameters: []
+      responses:
+        404:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'No query results for model [App\Models\Order] 17'
+                properties:
+                  message:
+                    type: string
+                    example: 'No query results for model [App\Models\Order] 17'
+      tags:
+        - Endpoints
+      security: []
+    parameters:
+      -
+        in: path
+        name: id
+        description: 'The ID of the order.'
+        example: 17
+        required: true
+        schema:
+          type: integer
+  '/api/users/{userId}/orders':
+    get:
+      summary: 'Display a listing of the orders for a specific user.'
+      operationId: displayAListingOfTheOrdersForASpecificUser
+      description: ''
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                example: []
+      tags:
+        - Endpoints
+      security: []
+    parameters:
+      -
+        in: path
+        name: userId
+        description: ''
+        example: consequatur
+        required: true
+        schema:
+          type: string
+  /api/payments:
+    post:
+      summary: 'Make a payment using Paystack.'
+      operationId: makeAPaymentUsingPaystack
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: 'Must be a valid email address.'
+                  example: qkunze@example.com
+                  nullable: false
+                amount:
+                  type: number
+                  description: 'Must be at least 1.'
+                  example: 51
+                  nullable: false
+              required:
+                - email
+                - amount
+      security: []
+    get:
+      summary: 'Display a listing of the payment records.'
+      operationId: displayAListingOfThePaymentRecords
+      description: ''
+      parameters: []
+      responses:
+        500:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'Server Error'
+                properties:
+                  message:
+                    type: string
+                    example: 'Server Error'
+      tags:
+        - Endpoints
+      security: []
+  /api/payments/callback:
+    get:
+      summary: 'Handle Paystack payment callback.'
+      operationId: handlePaystackPaymentCallback
+      description: ''
+      parameters: []
+      responses:
+        500:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'Server Error'
+                properties:
+                  message:
+                    type: string
+                    example: 'Server Error'
+      tags:
+        - Endpoints
+      security: []
+  /api/wallets/fund:
+    post:
+      summary: "Fund the user's wallet."
+      operationId: fundTheUsersWallet
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: string
+                  description: 'The <code>id</code> of an existing record in the users table.'
+                  example: consequatur
+                  nullable: false
+                amount:
+                  type: number
+                  description: 'Must be at least 1.'
+                  example: 45
+                  nullable: false
+              required:
+                - user_id
+                - amount
+      security: []
+  /api/franchises:
+    get:
+      summary: 'Display a listing of the franchises.'
+      operationId: displayAListingOfTheFranchises
+      description: ''
+      parameters: []
+      responses:
+        500:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'Server Error'
+                properties:
+                  message:
+                    type: string
+                    example: 'Server Error'
+      tags:
+        - Endpoints
+      security: []
+  /api/users:
+    get:
+      summary: ''
+      operationId: getApiUsers
+      description: ''
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                example: []
+      tags:
+        - Endpoints
+      security: []
+  '/api/users/{id}':
+    put:
+      summary: ''
+      operationId: putApiUsersId
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      security: []
+    delete:
+      summary: ''
+      operationId: deleteApiUsersId
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      security: []
+    parameters:
+      -
+        in: path
+        name: id
+        description: 'The ID of the user.'
+        example: 17
+        required: true
+        schema:
+          type: integer
+  '/api/users/{id}/toggle-status':
+    patch:
+      summary: ''
+      operationId: patchApiUsersIdToggleStatus
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      security: []
+    parameters:
+      -
+        in: path
+        name: id
+        description: 'The ID of the user.'
+        example: 17
+        required: true
+        schema:
+          type: integer
+  /api/settings:
+    get:
+      summary: ''
+      operationId: getApiSettings
+      description: ''
+      parameters: []
+      responses:
+        500:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'Server Error'
+                properties:
+                  message:
+                    type: string
+                    example: 'Server Error'
+      tags:
+        - Endpoints
+      security: []
+    post:
+      summary: ''
+      operationId: postApiSettings
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      security: []
+  /api/categories:
+    get:
+      summary: ''
+      operationId: getApiCategories
+      description: ''
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                example: []
+      tags:
+        - Endpoints
+      security: []
+    post:
+      summary: ''
+      operationId: postApiCategories
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      security: []
+  '/api/categories/{id}':
+    put:
+      summary: ''
+      operationId: putApiCategoriesId
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      security: []
+    delete:
+      summary: ''
+      operationId: deleteApiCategoriesId
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      security: []
+    parameters:
+      -
+        in: path
+        name: id
+        description: 'The ID of the category.'
+        example: 17
+        required: true
+        schema:
+          type: integer
+  /api/foods:
+    post:
+      summary: ''
+      operationId: postApiFoods
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      security: []
+  /api/reports/orders:
+    get:
+      summary: ''
+      operationId: getApiReportsOrders
+      description: ''
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                example: []
+      tags:
+        - Endpoints
+      security: []
+  /api/reports/payments:
+    get:
+      summary: ''
+      operationId: getApiReportsPayments
+      description: ''
+      parameters: []
+      responses:
+        500:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'Server Error'
+                properties:
+                  message:
+                    type: string
+                    example: 'Server Error'
+      tags:
+        - Endpoints
+      security: []
