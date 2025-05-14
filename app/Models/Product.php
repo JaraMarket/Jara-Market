@@ -15,17 +15,18 @@ class Product extends Model
         'image',
         'category_id',
         'vendor_id',
+        'price',
         'preparation_steps',
     ];
 
-    public function categories()
+     public function categories()
     {
-        return $this->belongsToMany(Category::class);
+        return $this->belongsToMany(Category::class, 'category_product', 'product_id', 'category_id');
     }
 
     public function ingredients()
     {
-        return $this->belongsToMany(Ingredient::class)
+        return $this->belongsToMany(Ingredient::class, 'ingredient_product', 'product_id', 'ingredient_id')
             ->withPivot('quantity', 'unit')
             ->withTimestamps();
     }

@@ -274,6 +274,7 @@ Route::prefix('products')->middleware('auth')->group(function () {
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'preparation_steps' => ['required', 'string'],
+            'price' => ['required', 'numeric', 'min:0'],
             'categories' => ['required', 'array'],
             'categories.*' => ['exists:categories,id'],
             'ingredients' => ['required', 'array'],
@@ -285,6 +286,7 @@ Route::prefix('products')->middleware('auth')->group(function () {
         $product = Product::create([
             'name' => $validated['name'],
             'description' => $validated['description'],
+            'price' => $validated['price'],
             'preparation_steps' => $validated['preparation_steps']
         ]);
 
@@ -305,8 +307,9 @@ Route::prefix('products')->middleware('auth')->group(function () {
 
     // Show product edit form
     Route::get('/{product}/edit', function (Product $product) {
-        $product->load('categories');
-        return view('products.edit', compact('product', 'categories'));
+        $categories = $product->categories;
+        $ingredients = $product->ingredients; 
+        return view('products.edit', compact('product', 'categories', 'ingredients'));
     })->name('products.edit');
 
     // Update product
