@@ -5,9 +5,9 @@
     <div class="max-w-4xl mx-auto">
         <div class="bg-white rounded-lg shadow-md p-6">
             <div class="flex justify-between items-center mb-6">
-                <h1 class="text-2xl font-bold text-gray-800">Edit Product</h1>
+                <h1 class="text-2xl font-bold text-gray-800">Edit Food</h1>
                 <a href="{{ route('products.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition duration-300">
-                    Back to Products
+                    Back to Food
                 </a>
             </div>
 
@@ -16,9 +16,18 @@
                 @method('PUT')
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    <div class="col-span-2">
+                        @if ($product->image_url)
+                            <img class="h-30 w-30 rounded-full object-cover"
+                                src="{{ get_media_url($product->image_url) }}"
+                                alt="{{ $product->name }}">
+                        @endif
+                    </div>
+
                     <!-- Product Name -->
                     <div class="col-span-2">
-                        <label for="name" class="block text-sm font-medium text-gray-700">Product Name</label>
+                        <label for="name" class="block text-sm font-medium text-gray-700">Food Name</label>
                         <input type="text" name="name" id="name" value="{{ old('name', $product->name) }}"
                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 @error('name') border-red-500 @enderror">
                         @error('name')
@@ -110,7 +119,7 @@
                     <div class="col-span-2">
                         <label class="block text-sm font-medium text-gray-700">Calculated Price</label>
                         <div class="mt-1">
-                            <input type="text" id="calculated_price" readonly class="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 bg-gray-50">
+                            <input type="text" name="discount_price" id="calculated_price" readonly class="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 bg-gray-50">
                             <p class="mt-1 text-sm text-gray-500">Price is calculated based on ingredients</p>
                         </div>
                     </div>
@@ -139,14 +148,9 @@
                                 </div>
                                 <div class="w-32">
                                     <select name="ingredients[{{ $index }}][unit]" class="unit-select block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
-                                        <option value="piece" {{ $ingredient->pivot->unit == 'piece' ? 'selected' : '' }}>Piece</option>
-                                        <option value="kg" {{ $ingredient->pivot->unit == 'kg' ? 'selected' : '' }}>Kilogram</option>
-                                        <option value="g" {{ $ingredient->pivot->unit == 'g' ? 'selected' : '' }}>Gram</option>
-                                        <option value="l" {{ $ingredient->pivot->unit == 'l' ? 'selected' : '' }}>Liter</option>
-                                        <option value="ml" {{ $ingredient->pivot->unit == 'ml' ? 'selected' : '' }}>Milliliter</option>
-                                        <option value="cup" {{ $ingredient->pivot->unit == 'cup' ? 'selected' : '' }}>Cup</option>
-                                        <option value="tbsp" {{ $ingredient->pivot->unit == 'tbsp' ? 'selected' : '' }}>Tablespoon</option>
-                                        <option value="tsp" {{ $ingredient->pivot->unit == 'tsp' ? 'selected' : '' }}>Teaspoon</option>
+                                    @foreach($uoms as $uom)
+                                            <option value="{{ $uom->code }}"  {{ $ingredient->pivot->unit == $uom->code ? 'selected' : '' }}>{{ $uom->name }}</option>
+                                    @endforeach 
                                     </select>
                                 </div>
                                 <div class="flex items-center">
@@ -180,9 +184,24 @@
                     </div>
                 </div>
 
+                <div class="col-span-2">
+                    <label for="image" class="block text-sm font-medium text-gray-700">Image</label>
+                    <div class="mt-1 flex items-center">
+                        <img id="image-preview" class="hidden h-32 w-32 object-cover rounded-lg" src="{{ asset('storage/' . $product->image_url) }}" alt="{{ $product->name }}">
+                        <div class="ml-4">
+                            <input type="file" name="image_url" id="image" accept="image/*" 
+                                class="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md @error('image_url') border-red-500 @enderror"
+                                onchange="previewImage(this)">
+                        </div>
+                    </div>
+                    @error('image')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <div class="flex justify-end space-x-4">
                     <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition duration-300">
-                        Update Product
+                        Update Food
                     </button>
                 </div>
             </form>
@@ -197,6 +216,23 @@ document.addEventListener('DOMContentLoaded', function() {
     const addIngredientButton = document.getElementById('add-ingredient');
     const calculatedPriceInput = document.getElementById('calculated_price');
     let ingredientCount = {{ count($product->ingredients) }};
+
+    const imageInput = document.getElementById('image');
+            const imagePreview = document.getElementById('image-preview');
+            const imagePreviewContainer = document.getElementById('image-preview-container');
+
+            imageInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+
+                    reader.onload = function(e) {
+                        imagePreview.src = e.target.result;
+                        imagePreviewContainer.style.display = 'block';
+                    }
+
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
 
     // Add new ingredient
     addIngredientButton.addEventListener('click', function() {
@@ -220,14 +256,11 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
             <div class="w-32">
                 <select name="ingredients[${ingredientCount}][unit]" class="unit-select block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
-                    <option value="piece">Piece</option>
-                    <option value="kg">Kilogram</option>
-                    <option value="g">Gram</option>
-                    <option value="l">Liter</option>
-                    <option value="ml">Milliliter</option>
-                    <option value="cup">Cup</option>
-                    <option value="tbsp">Tablespoon</option>
-                    <option value="tsp">Teaspoon</option>
+                    @foreach($uoms as $uom)
+                    <option value="{{ $uom->code }}">
+                        {{ $uom->name }}
+                    </option>
+                @endforeach
                 </select>
             </div>
             <div class="flex items-center">
@@ -286,7 +319,8 @@ document.addEventListener('DOMContentLoaded', function() {
             'cup': { 'l': 0.25, 'ml': 250, 'tbsp': 16, 'tsp': 48 },
             'tbsp': { 'l': 0.015, 'ml': 15, 'cup': 0.0625, 'tsp': 3 },
             'tsp': { 'l': 0.005, 'ml': 5, 'cup': 0.0208, 'tbsp': 0.333 },
-            'piece': { 'kg': 1, 'g': 1 }
+            'piece': { 'kg': 1, 'g': 1 },
+            'por': { 'kg': 1, 'g': 1 }
         };
 
         if (fromUnit === toUnit) return quantity;
@@ -307,6 +341,18 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initial price calculation
     calculatePrice();
 });
+
+function previewImage(input) {
+    const preview = document.getElementById('image-preview');
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            preview.classList.remove('hidden');
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
 </script>
 @endpush
 @endsection 

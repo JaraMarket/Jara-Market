@@ -2,237 +2,219 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Http\Requests\UserSignupRequest;
+use Exception;
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
-use App\Mail\UserRegistered;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\UserRegisteredOtp;
-use App\Http\Requests\RegisterOTPRequest;
-use App\Http\Requests\UserLoginRequest;
-use App\Mail\UserLoginOtp;
-use Illuminate\Support\Facades\Cache;
-use App\Models\User_otp;
-use App\Models\Wallet;
-use Illuminate\Support\Str;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use App\Services\LoginService;
+use App\Http\Requests\OtpRequest;
+use App\Http\Requests\LoginRequest;
+use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
+use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\ResendOtpRequest;
+use App\Http\Requests\UserProfileRequest;
+use App\Services\UserRegistrationService;
+use App\Http\Requests\ChangePasswordRequest;
+use App\Http\Resources\ReferralResource;
+use App\Http\Resources\WalletResource;
 
-/**
- * @OA\Info(title="JaraMarket API", version="1.0")
- * @OA\Server(url="http://localhost:8000")
- * @OA\Tag(
- *     name="Users",
- *     description="API Endpoints for managing users"
- * )
- */
+
+
 class UserController extends Controller
 {
+    public function __construct(public UserRegistrationService $userService, public LoginService $loginService)
+    { }
 
-
-    public function registerUser (UserSignupRequest $request)
+    public function registerUser(RegisterRequest $request)
     {
-        $referralCode = $request->input('referral_code');
+        try {
+            $user = $this->userService->register($request->validated());
 
-        // Register the Customer
-        $data = User::create([
-            'firstname' => $request->firstname,
-            'lastname' => $request->lastname,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => 'customer',
-            'referral_code' => Str::random(10)
-        ]);
-
-        // Create a wallet for the user
-        $wallet = Wallet::create([
-            'user_id' => $data->id
-        ]);
-
-        $referral_bonus = config('app.referral_bonus');
-
-        // If a referral code is provided, validate it and update the referrer's wallet
-        if ($referralCode) {
-            $referrer = User::where('referral_code', $referralCode)->first();
-            if ($referrer) {
-                // Update the referrer's wallet
-                $referrerWallet = Wallet::where('user_id', $referrer->id)->first();
-                $referrerWallet->update([
-                // Update the referrer's wallet with a bonus
-                    'balance' => $referrerWallet->balance + $referral_bonus
-                ]);
-
-                // Update the user's referrer_id
-                $data->update([
-                    'referrer_id' => $referrer->id
-                ]);
-            }
+            return response()->json([
+                'status' => true,
+                'message' => 'An OTP has been sent to your email address. It expires after 15 minutes.',
+                'data' => new UserResource($user)
+            ], 201);
+        } catch (Exception $e) {
+            return response()->json(['status' => false, 'message' => $e->getMessage()], 500);
         }
-
-        // Generate OTP and save
-        $otp = rand(1000, 9999); // Generate a 4-digit OTP
-
-        User_otp::create([
-            'otp' => $otp,
-            'email' => $data->email,
-        ]);
-
-
-        // Send OTP via email
-        Mail::to($data->email)->send(new UserRegisteredOtp($otp, $data->firstname));
-
-        $token = $data->createToken('User _signUp')->plainTextToken;
-
-        // Return success response
-        return response()->json(['message' => 'An OTP has been sent to your email address. It expires after 15 minutes.', 'token' => $token, 'data' => $data], 201);
     }
 
-    public function validateUserRegisterOTP(RegisterOTPRequest $request)
+    public function resendOtp(ResendOtpRequest $request)
     {
-        $otp = $request->otp;
-        $email = $request->email;
-
-        $UserData = User::where('email', $email)->first();
-        $Userotp = User_otp::where('email', $email)->first();
-        if (!$Userotp) {
-            return response()->json(['success' => false, 'message' => 'No customer record found'], 404);
-        }
-
-        $otpRecord = User_otp::where('otp', $otp)->where('email', $email)->where('created_at', '>=', now()->subMinutes(50)) // Only consider OTPs created in the last 15 minutes
-            ->first();
-
-        if ($otpRecord) {
-            // Update email_verified_at field
-            $UserData->update([
-                'email_verified_at' => now(),
-            ]);
-
-            // Send notification via email
-            Mail::to($email)->send(new UserRegistered($UserData));
-
-            $otpRecord->delete();
-
-            $token = $UserData->createToken('User_signUp')->plainTextToken;
-            return response()->json(['success' => true, 'message' => 'OTP validated successfully and registration Complete', 'token' => $token], 201);
-        } else {
-            return response()->json(['success' => false, 'message' => 'Invalid OTP or OTP has expired'], 400);
+        try {
+            $this->userService->sendOtp($request->email);
+            return response()->json([
+                'status' => true,
+                'message' => 'An OTP has been sent to your email address. It expires after 15 minutes.',
+                'data' => null
+            ], 201);
+        } catch (Exception $e) {
+            return response()->json(['status' => false, 'message' => $e->getMessage()], 500);
         }
     }
-    public function User_login(UserLoginRequest $request)
+    
+    public function validateUserRegisterOTP(OtpRequest $request)
     {
-        // Retrieve customer data from the request
-        $email = $request->email;
-        $password = $request->password;
+        try {
 
-        // Check if the customer exists
-        $user = User::where('email', $email)->first();
+            $data = $request->validated();
+            $user = $this->userService->validateOTP($data['email'], $data['otp']);
+    
+            return response()->json([
+                'status' => true,
+                'message' => 'OTP validated successfully',
+                'data' => $user
+            ], 201);
+    
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage()
+            ], $e->getCode() ?: 400);
+        }
+    }
 
-        if (!$user) {
-            return response()->json(['success' => false, 'message' => 'Customer not found'], 404);
+    public function verifyEmailWithOTP(OtpRequest $request)
+    {
+        $user = $this->userService->validateOTP($request->email, $request->otp);
+
+        return $this->validateEmail($user);
+    }
+
+    public function validateEmail(User $user)
+    {
+        try {
+
+            $this->userService->validateEmail($user);
+    
+            return response()->json([
+                'status' => true,
+                'message' => 'Email verified successfully and registration complete',
+                'data' => new UserResource($user)
+            ], 201);
+    
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage()
+            ], $e->getCode() ?: 400);
+        }
+    }
+
+    public function login(LoginRequest $request)
+    {
+        try {
+            $data = $this->loginService->loginUser($request);
+           
+            return response()->json([
+                'status'  => true,
+                'message' => 'User Authenticated successfully',
+                'data'    => $data
+            ], 201);
+        } catch (Exception $e) {
+            report($e);
+
+            return response()->json([
+                'status'  => false,
+                'message' => 'User Authenticated failed',
+                'data'    => $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    public function logout(Request $request)
+    {
+        if ($request->user()) {
+            // Revoke current token
+            $request->user()->currentAccessToken()->delete();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Session ended! Logout was successful.'
+            ], 200);
         }
 
-        // Check if the password is correct
-        if (!Hash::check($password, $user->password)) {
-            return response()->json(['success' => false, 'message' => 'Invalid password'], 400);
-        }
-
-        // Generate a random OTP
-        $otp = rand(1000, 9999);
-
-        // Save the OTP to the database
-        $data = [
-            // 'otp' => $otp,
-            'email' => $user->email,
-            'user_id' => $user->id,
-            'firstname' => $user->firstname,
-            'lastname' => $user->lastname,
-        ];
-
-        // Create a Sanctum token
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        // Send the OTP to the customer's email address
-        Mail::to($user->email)->send(new UserLoginOtp($otp, $user->firstname));
-
-        // Return a success response with the OTP and token
         return response()->json([
-            'success' => true, 
-            'message' => 'An OTP has been sent to your email address. OTP expires after 15 minutes.', 
-            'data' => $data,
-            'token' => $token
-        ], 201);
+            'status' => false,
+            'message' => 'Not authenticated.'
+        ], 401);
     }
-    public function validateUserLoginOTP(RegisterOTPRequest $request)
+
+    public function fetchUserProfile()
     {
-        // Retrieve the OTP and email from the request
-        $otp = $request->otp;
-        $email = $request->email;
-
-        // Check if the customer exists
-        $user = User::where('email', $email)->first();
-
-        if (!$user) {
-            return response()->json(['success' => false, 'message' => 'Customer not found'], 404);
+        try {
+            $user = auth()->user();
+            return response()->json([
+                'status' => true,
+                'message' => 'User Profile retrieved successfully',
+                'data' => new UserResource($user)
+            ], 201);
+        } catch (Exception $e) {
+            return response()->json(['status' => false, 'message' => 'User Profile not found'], 404);
         }
-
-        // Check if the OTP is valid
-        $otpRecord = User_otp::where('otp', $otp)->where('email', $email)->where('created_at', '>=', now()->subMinutes(15)) // Only consider OTPs created in the last 15 minutes
-            ->first();
-
-        if (!$otpRecord) {
-            return response()->json(['success' => false, 'message' => 'Invalid OTP or OTP has expired'], 400);
-        }
-
-        // Delete the OTP record
-        $otpRecord->delete();
-
-        // Generate a new token for the customer
-        $token = $user->createToken('user_login')->plainTextToken;
-
-        // Return a success response with the token
-        return response()->json(['success' => true, 'message' => 'OTP validated successfully and login complete', 'token' => $token, 'data' => $otpRecord], 201);
     }
 
-    public function fetchUserProfile($email)
-{
-    $cacheKey = 'user-profile-' . $email;
-    $cacheTime = 60; // Cache for 1 hour
-
-    $data = Cache::remember($cacheKey, $cacheTime, function () use ($email) {
-        return User::where('email', $email)->with('wallet')->first();
-    });
-
-    if ($data) {
-        return response()->json($data, 201);
-    } else {
-        return response()->json(['success' => false, 'message' => 'customer data not found'], 404);
-    }
-}
-
-        public function editUserProfile($email, Request $request)
+    public function myRefferals()
     {
-
-        $userData = User::where('email', $email)->first();
-
-        // Check if the customer exists
-        if (!$userData) {
-            return response()->json(['message' => 'Customer not found'], 404);
-        }
-
-        $userData->update([
-            'firstname' => $request->firstname ?? $userData->firstname,
-            'lastname' => $request->lastname ?? $userData->lastname,
-            'phone' => $request->phone ?? $userData->phone,
-        ]);
-
-        if ($userData) {
-            return response()->json(['success' => true, 'message' => 'Profile Updated Successfully', 'data' => $userData], 201);
-        } else {
-            return response()->json(['success' => false, 'message' => 'Problem Updating Profile'], 400);
+        try {
+            $user = auth()->user();
+            return response()->json([
+                'status'  => true,
+                'message' => 'Refferals retrieved successfully',
+                'data'    => ReferralResource::collection($user->referrals()->latest()->get())
+            ], 201);
+        } catch (Exception $e) {
+            return response()->json(['status' => false, 'message' => 'User refferals not found'], 404);
         }
     }
 
+    public function fetchUserWallet()
+    {
+        try {
+            $user = auth()->user();
+            return response()->json([
+                'status' => true,
+                'message' => 'User Wallet retrieved successfully',
+                'data' => new WalletResource($user->wallet)
+            ], 201);
+        } catch (Exception $e) {
+            return response()->json(['status' => false, 'message' => 'User Profile not found'], 404);
+        }
+    }
 
+    public function editUserProfile(UserProfileRequest $request)
+    {
+        try {       
+          $user = $this->userService->updateProfile($request);
+        return response()->json(['status' => true, 'message' => 'Profile Updated Successfully', 'data' => new UserResource($user)], 201);
+        } catch (Exception $e) {
+            return response()->json(['status' => false, 'message' => 'Problem Updating Profile'], 400);
+        }
+    }
+
+    public function updateProfile(UserProfileRequest $request, $email)
+    {
+        try {       
+          $user = $this->userService->updateProfile($request, $email);
+        return response()->json(['status' => true, 'message' => 'Profile Updated Successfully', 'data' => new UserResource($user)], 201);
+        } catch (Exception $e) {
+            return response()->json(['status' => false, 'message' => 'Problem Updating Profile'], 400);
+        }
+    }
+
+    public function changePassword(ChangePasswordRequest $request)
+    {
+        try {
+            $user = auth()->user();
+            $user->update(['password' => $request->password]);
+            return response()->json(['status' => true, 'message' => 'Password changed successfully', 'data' => new UserResource($user)], 201);
+        } catch (Exception $e) {
+            report($e);
+            return response()->json(['status' => false, 'message' => 'Password change failed! Please contact admin', 'data'=> null], 201);
+        }
+    }
 
      /**
      * @OA\Get(
@@ -297,7 +279,7 @@ class UserController extends Controller
             'role' => $request->role ?? $user->role
         ]);
 
-        return response()->json(['message' => 'User updated successfully']);
+        return response()->json(['status' => true,'message' => 'User updated successfully']);
     }
 
     /**
@@ -322,7 +304,7 @@ class UserController extends Controller
         $user->is_active = !$user->is_active;
         $user->save();
 
-        return response()->json(['message' => 'User status updated successfully']);
+        return response()->json(['status' => true,'message' => 'User status updated successfully']);
     }
 
     /**
@@ -346,6 +328,6 @@ class UserController extends Controller
         $user = User::findOrFail($id);
         $user->delete();
 
-        return response()->json(['message' => 'User deleted successfully']);
+        return response()->json(['status' => true,'message' => 'User deleted successfully']);
     }
 }

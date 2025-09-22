@@ -36,16 +36,23 @@
             </div>
 
             <div class="col-span-6 sm:col-span-4">
+                <label for="category_id" class="block text-sm font-medium text-gray-700">Category</label>
+                <select name="category_id" id="category_id" class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                    <option value="">select</option>
+                    @foreach($categories as $row)
+                        <option {{ $ingredient->category_id === $row->id ? 'selected' : ''}} value="{{$row->id}}">{{$row->name}}</option>
+                    @endforeach
+                </select>
+            </div>
+
+
+            <div class="col-span-6 sm:col-span-4">
                 <label for="unit" class="block text-sm font-medium text-gray-700">Unit</label>
                 <select name="unit" id="unit" class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-                    <option value="piece" {{ old('unit', $ingredient->unit) == 'piece' ? 'selected' : '' }}>Piece</option>
-                    <option value="kg" {{ old('unit', $ingredient->unit) == 'kg' ? 'selected' : '' }}>Kilogram</option>
-                    <option value="g" {{ old('unit', $ingredient->unit) == 'g' ? 'selected' : '' }}>Gram</option>
-                    <option value="l" {{ old('unit', $ingredient->unit) == 'l' ? 'selected' : '' }}>Liter</option>
-                    <option value="ml" {{ old('unit', $ingredient->unit) == 'ml' ? 'selected' : '' }}>Milliliter</option>
-                    <option value="cup" {{ old('unit', $ingredient->unit) == 'cup' ? 'selected' : '' }}>Cup</option>
-                    <option value="tbsp" {{ old('unit', $ingredient->unit) == 'tbsp' ? 'selected' : '' }}>Tablespoon</option>
-                    <option value="tsp" {{ old('unit', $ingredient->unit) == 'tsp' ? 'selected' : '' }}>Teaspoon</option>
+                    <option value="">select</option>
+                    @foreach($units as $row)
+                        <option {{ $ingredient->unit === $row->code ? 'selected' : ''}} value="{{$row->code}}">{{$row->name}}</option>
+                    @endforeach
                 </select>
             </div>
 
@@ -62,7 +69,7 @@
             <div class="col-span-6">
                 <label for="image" class="block text-sm font-medium text-gray-700">Image</label>
                 <div class="mt-1 flex items-center">
-                    <img id="image-preview" class="h-32 w-32 object-cover rounded-lg" src="{{ $ingredient->image_url }}" alt="Current image">
+                    <img id="image-preview" class="h-32 w-32 object-cover rounded-lg" src="{{ get_media_url($ingredient->image_url) }}" alt="Current image">
                     <div class="ml-4">
                         <input type="file" name="image" id="image" accept="image/*" 
                             class="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md @error('image') border-red-500 @enderror"

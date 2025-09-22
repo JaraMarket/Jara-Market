@@ -29,16 +29,26 @@
                     <div class="px-4 py-5 sm:p-6">
                         <div class="grid grid-cols-6 gap-6">
                             <div class="col-span-6 sm:col-span-3">
-                                <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
-                                <input type="text" name="name" id="name" value="{{ old('name', $user->name) }}"
+                                <label for="name" class="block text-sm font-medium text-gray-700">First Name</label>
+                                <input type="text" name="firstname" id="firstname" value="{{ old('firstname', $user->firstname) }}"
                                     class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-                                @error('name')
+                                @error('firstname')
                                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
 
                             <div class="col-span-6 sm:col-span-3">
-                                <label for="email" class="block text-sm font-medium text-gray-700">Email address</label>
+                                <label for="name" class="block text-sm font-medium text-gray-700">Last Name</label>
+                                <input type="text" name="lastname" id="lastname" value="{{ old('lastname', $user->lastname) }}"
+                                    class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                @error('lastname')
+                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+
+                            <div class="col-span-6 sm:col-span-3">
+                                <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
                                 <input type="email" name="email" id="email" value="{{ old('email', $user->email) }}"
                                     class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
                                 @error('email')
@@ -65,11 +75,11 @@
 
                             <div class="col-span-6 sm:col-span-3">
                                 <label for="active" class="block text-sm font-medium text-gray-700">Status</label>
-                                <select id="active" name="active"
+                                <select id="is_active" name="is_active"
                                     class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
-                                    <option value="1" {{ old('active', $user->active) ? 'selected' : '' }}>Active
+                                    <option value="1" {{ old('is_active', $user->is_active) ? 'selected' : '' }}>Active
                                     </option>
-                                    <option value="0" {{ old('active', $user->active) ? '' : 'selected' }}>Inactive
+                                    <option value="0" {{ old('is_active', $user->is_active) ? '' : 'selected' }}>Inactive
                                     </option>
                                 </select>
                                 @error('active')

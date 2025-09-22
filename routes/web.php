@@ -1,30 +1,27 @@
 <?php
 
-use App\Http\Controllers\AdminController;
-use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\StateRepresentativeController;
+use Arcanedev\LogViewer\Http\Controllers\LogViewerController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\Auth\EmailVerificationController;
+use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\PaymentReportController;
+use App\Http\Controllers\FranchiseController;
+use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CommissionController;
 use Illuminate\Support\Facades\Route;
-use App\Models\User;
-use App\Models\Order;
-use App\Models\Product;
-use App\Models\Category;
-use App\Models\Payment;
-use App\Models\Setting;
-use App\Models\Franchise;
-use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
-
-use Illuminate\Support\Facades\Password;
-use Illuminate\Auth\Events\Registered;
-use Illuminate\Support\Str;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AdvertisementController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\VendorController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\IngredientController;
-use App\Http\Controllers\VendorController;
-use App\Http\Controllers\OrderController;
+use App\Http\Controllers\StateRepresentativeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,825 +29,182 @@ use App\Http\Controllers\OrderController;
 |--------------------------------------------------------------------------
 */
 
-// Authentication Routes
-Route::get('/', function () {
-    return view('auth.login');
-})->middleware('guest')->name('login.show');
+Route::middleware('guest')->group(function () {
+    // 👇 Default route to login
+    Route::redirect('/', '/login');
 
-Route::post('/login', function (Request $request) {
-    $credentials = $request->validate([
-        'email' => ['required', 'email'],
-        'password' => ['required'],
-    ]);
+    Route::get('/register', fn () => view('auth.register'))->name('register.show');
+    Route::post('/register', [AuthController::class, 'register'])->name('register');
 
-    if (Auth::attempt($credentials)) {
-        $request->session()->regenerate();
-        return redirect()->intended('dashboard');
-    }
+    Route::get('/login', fn () => view('auth.login'))->name('login.show');
+    Route::post('/login', [AuthController::class, 'login'])->name('login');
 
-    return back()->withErrors([
-        'email' => 'The provided credentials do not match our records.',
-    ])->onlyInput('email');
-})->name('login');
-
-Route::post('/logout', function (Request $request) {
-    Auth::logout();
-    $request->session()->invalidate();
-    $request->session()->regenerateToken();
-    return redirect('/');
-})->middleware('auth')->name('logout');
-
-// Dashboard
-Route::get('/dashboard', function () {
-    $totalOrders = Order::count();
-    $totalUsers = User::count();
-    $totalProducts = Product::count();
-    $totalCategories = Category::count();
-    $recentOrders = Order::with('user')->latest()->take(5)->get();
-    $latestUsers = User::latest()->take(5)->get();
-
-    // Monthly sales data for chart
-    // $monthlySales = Order::selectRaw("strftime('%m', created_at) as month, SUM(total) as total")
-    //     ->whereRaw("strftime('%Y', created_at) = ?", [date('Y')])
-    //     ->groupBy('month')
-    //     ->orderBy('month')
-    //     ->get()
-    //     ->pluck('total', 'month')
-    //     ->toArray();
-
-    $months = [];
-    $salesData = [];
-
-    for ($i = 1; $i <= 12; $i++) {
-        $months[] = date('F', mktime(0, 0, 0, $i, 1));
-        // $salesData[] = $monthlySales[sprintf("%02d", $i)] ?? 0;
-    }
-
-    // Format data for the sales chart
-    // $salesChartData = [
-    //     'labels' => $months,
-    //     'data' => $salesData
-    // ];
-
-    // Get top 5 products by quantity sold
-    $topProducts = DB::table('order_items')
-        ->join('products', 'order_items.product_id', '=', 'products.id')
-        ->select('products.name', DB::raw('SUM(order_items.quantity) as total_quantity'))
-        ->groupBy('products.name')
-        ->orderByDesc('total_quantity')
-        ->limit(5)
-        ->get();
-
-    // Format data for the products chart
-    $productsChartData = [
-        'labels' => $topProducts->pluck('name')->toArray(),
-        'data' => $topProducts->pluck('total_quantity')->toArray()
-    ];
-
-    return view('dashboard', compact(
-        'totalOrders',
-        'totalUsers',
-        'totalProducts',
-        'totalCategories',
-        'recentOrders',
-        'latestUsers',
-        // 'salesChartData',
-        'productsChartData'
-    ));
-})->middleware('auth')->name('dashboard');
-
-// Order Management Routes
-Route::prefix('orders')->middleware('auth')->group(function () {
-    // List all orders
-    Route::get('/', function () {
-        $orders = Order::with(['user', 'items.product'])->latest()->paginate(10);
-        return view('orders.index', compact('orders'));
-    })->name('orders.index');
-
-    // Show create order form
-    Route::get('/create', function () {
-        $products = Product::all();
-        $users = User::all();
-        return view('orders.create', compact('products', 'users'));
-    })->name('orders.create');
-
-    // Store new order
-    Route::post('/', [OrderController::class, 'store'])->name('orders.store');
-
-    // Show order details
-    Route::get('/{order}', function (Order $order) {
-        $order->load(['user', 'items.product']);
-        return view('orders.show', compact('order'));
-    })->name('orders.show');
-
-    // Update order status
-    Route::patch('/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.update.status');
-
-    // Delete order
-    Route::delete('/{order}', function (Order $order) {
-        $order->delete();
-        return redirect()->route('orders.index')
-            ->with('success', 'Order deleted successfully');
-    })->name('orders.destroy');
+    Route::prefix('password')->group(function () {
+        Route::get('/forgot', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+        Route::post('/forgot', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+    
+        Route::get('/reset/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
+        Route::post('/reset', [ResetPasswordController::class, 'reset'])->name('password.update');
+    });
+    
+    // Email Verification
+    Route::prefix('email')->group(function () {
+        Route::get('/verify', [EmailVerificationController::class, 'notice'])->middleware('auth')->name('verification.notice');
+        Route::get('/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])->middleware(['auth', 'signed'])->name('verification.verify');
+        Route::post('/verification-notification', [EmailVerificationController::class, 'resend'])->middleware(['auth', 'throttle:6,1'])->name('verification.send');
+    });
 });
 
-// User Management Routes
-Route::prefix('users')->middleware('auth')->group(function () {
-    // List all users
-    Route::get('/', function () {
-        $users = User::latest()->paginate(10);
-        return view('users.index', compact('users'));
-    })->name('users.index');
 
-    // Show user create form
-    Route::get('/create', function () {
-        return view('users.create');
-    })->name('users.create');
 
-    // Store new user
-    Route::post('/', function (Request $request) {
-        $validated = $request->validate([
-            'firstname' => ['required', 'string', 'max:255'],
-            'lastname' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'role' => ['required', 'string', 'in:customer,admin,state_representative,vendor'],
-        ]);
 
-        $user = User::create([
-            'firstname' => $validated['firstname'],
-            'lastname' => $validated['lastname'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'role' => $validated['role'],
-            'referral_code' => Str::random(10),
-        ]);
+Route::middleware('auth')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-        return redirect()->route('users.index')
-            ->with('success', 'User created successfully');
-    })->name('users.store');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Show user edit form
-    Route::get('/{user}/edit', function (User $user) {
-        return view('users.edit', compact('user'));
-    })->name('users.edit');
+    Route::prefix('orders')->group(function () {
+        Route::get('/', [OrderController::class, 'index'])->name('orders.index');
+        Route::get('/data', [OrderController::class, 'getData'])->name('orders.data');
 
-    // Update user
-    Route::put('/{user}', function (Request $request, User $user) {
-        $validated = $request->validate([
-            'firstname' => ['required', 'string', 'max:255'],
-            'lastname' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
-            'role' => ['required', 'string', 'in:customer,admin,state_representative,vendor'],
-        ]);
-
-        $userData = [
-            'firstname' => $validated['firstname'],
-            'lastname' => $validated['lastname'],
-            'email' => $validated['email'],
-            'role' => $validated['role'],
-        ];
-
-        if (!empty($validated['password'])) {
-            $userData['password'] = Hash::make($validated['password']);
-        }
-
-        $user->update($userData);
-
-        return redirect()->route('users.index')
-            ->with('success', 'User updated successfully');
-    })->name('users.update');
-
-    // Toggle user active status
-    Route::put('/{user}/toggle-status', function (User $user) {
-        $user->update([
-            'is_active' => !$user->is_active
-        ]);
-
-        $status = $user->is_active ? 'activated' : 'deactivated';
-
-        return redirect()->route('users.index')
-            ->with('success', "User {$status} successfully");
-    })->name('users.toggle.status');
-
-    // Delete user
-    Route::delete('/{user}', function (User $user) {
-        $user->delete();
-        return redirect()->route('users.index')
-            ->with('success', 'User deleted successfully');
-    })->name('users.destroy');
-});
-
-// Category Management Routes
-Route::prefix('categories')->middleware('auth')->group(function () {
-    Route::get('/', [CategoryController::class, 'index'])->name('categories.index');
-    Route::get('/create', [CategoryController::class, 'create'])->name('categories.create');
-    Route::post('/', [CategoryController::class, 'store'])->name('categories.store');
-    Route::get('/{category}', [CategoryController::class, 'show'])->name('categories.show');
-    Route::get('/{category}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
-    Route::put('/{category}', [CategoryController::class, 'update'])->name('categories.update');
-    Route::delete('/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
-});
-
-// Product Management Routes
-Route::prefix('products')->middleware('auth')->group(function () {
-    // List all products
-    Route::get('/', function () {
-        $products = Product::with('categories')->latest()->paginate(10);
-        return view('products.index', compact('products'));
-    })->name('products.index');
-
-    // Show product create form
-    Route::get('/create', function () {
-        $categories = Category::all();
-        $ingredients = \App\Models\Ingredient::all();
-        return view('products.create', compact('categories', 'ingredients'));
-    })->name('products.create');
-
-    // Store new product
-    Route::post('/', function (Request $request) {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'preparation_steps' => ['required', 'string'],
-            'price' => ['required', 'numeric', 'min:0'],
-            'categories' => ['required', 'array'],
-            'categories.*' => ['exists:categories,id'],
-            'ingredients' => ['required', 'array'],
-            'ingredients.*.ingredient_id' => ['required', 'exists:ingredients,id'],
-            'ingredients.*.quantity' => ['required', 'numeric', 'min:0.01'],
-            'ingredients.*.unit' => ['required', 'string']
-        ]);
-
-        $product = Product::create([
-            'name' => $validated['name'],
-            'description' => $validated['description'],
-            'price' => $validated['price'],
-            'preparation_steps' => $validated['preparation_steps']
-        ]);
-
-        // Attach categories
-        $product->categories()->attach($validated['categories']);
-
-        // Attach ingredients with pivot data
-        foreach ($validated['ingredients'] as $ingredient) {
-            $product->ingredients()->attach($ingredient['ingredient_id'], [
-                'quantity' => $ingredient['quantity'],
-                'unit' => $ingredient['unit']
-            ]);
-        }
-
-        return redirect()->route('products.index')
-            ->with('success', 'Product created successfully');
-    })->name('products.store');
-
-    // Show product edit form
-    Route::get('/{product}/edit', function (Product $product) {
-        $categories = $product->categories;
-        $ingredients = $product->ingredients; 
-        return view('products.edit', compact('product', 'categories', 'ingredients'));
-    })->name('products.edit');
-
-    // Update product
-    Route::put('/{product}', function (Request $request, Product $product) {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'price' => ['required', 'numeric', 'min:0'],
-            'discount_price' => ['nullable', 'numeric', 'min:0'],
-            'stock' => ['required', 'integer', 'min:0'],
-            'categories' => ['required', 'array'],
-            'categories.*' => ['exists:categories,id'],
-            'ingredients' => ['required', 'string'],
-            'preparation_steps' => ['required', 'string'],
-        ]);
-
-        $product->update([
-            'name' => $validated['name'],
-            'description' => $validated['description'],
-            'price' => $validated['price'],
-            'discount_price' => $validated['discount_price'],
-            'stock' => $validated['stock'],
-            'ingredients' => $validated['ingredients'],
-            'preparation_steps' => $validated['preparation_steps'],
-        ]);
-
-        $product->categories()->sync($validated['categories']);
-
-        return redirect()->route('products.index')
-            ->with('success', 'Product updated successfully');
-    })->name('products.update');
-
-    // Delete product
-    Route::delete('/{product}', function (Product $product) {
-        $product->delete();
-        return redirect()->route('products.index')
-            ->with('success', 'Product deleted successfully');
-    })->name('products.destroy');
-});
-
-Route::prefix('settings')->middleware('auth')->group(function () {
-    // Show settings
-    Route::get('/', function () {
-        $settings = Setting::all()->pluck('value', 'key');
-        return view('settings.index', compact('settings'));
-    })->name('settings.index');
-
-    // Update settings
-    Route::post('/', function (Request $request) {
-        $validated = $request->validate([
-            'site_name' => ['required', 'string', 'max:255'],
-            'site_description' => ['nullable', 'string'],
-            'contact_email' => ['required', 'email'],
-            'contact_phone' => ['nullable', 'string'],
-            'address' => ['nullable', 'string'],
-            'currency' => ['required', 'string', 'size:3'],
-            'tax_rate' => ['required', 'numeric', 'min:0', 'max:100'],
-            'shipping_fee' => ['required', 'numeric', 'min:0'],
-            'social_facebook' => ['nullable', 'url'],
-            'social_twitter' => ['nullable', 'url'],
-            'social_instagram' => ['nullable', 'url'],
-        ]);
-
-        foreach ($validated as $key => $value) {
-            Setting::updateOrCreate(
-                ['key' => $key],
-                ['value' => $value]
-            );
-        }
-
-        return redirect()->route('settings.index')
-            ->with('success', 'Settings updated successfully');
-    })->name('settings.update');
-});
-
-// Franchise Management Routes
-Route::prefix('franchises')->middleware('auth')->group(function () {
-    // List all franchises
-    Route::get('/', function () {
-        $franchises = Franchise::with('owner')->latest()->paginate(10);
-        return view('franchises.index', compact('franchises'));
-    })->name('franchises.index');
-
-    // Show franchise create form
-    Route::get('/create', function () {
-        $users = User::all();
-        return view('franchises.create', compact('users'));
-    })->name('franchises.create');
-
-    // Store new franchise
-    Route::post('/', function (Request $request) {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'location' => ['required', 'string', 'max:255'],
-            'owner_id' => ['required', 'exists:users,id'],
-        ]);
-
-        Franchise::create($validated);
-
-        return redirect()->route('franchises.index')
-            ->with('success', 'Franchise created successfully');
-    })->name('franchises.store');
-
-    // Show franchise edit form
-    Route::get('/{franchise}/edit', function (Franchise $franchise) {
-        $users = User::all();
-        return view('franchises.edit', compact('franchise', 'users'));
-    })->name('franchises.edit');
-
-    // Update franchise
-    Route::put('/{franchise}', function (Request $request, Franchise $franchise) {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'location' => ['required', 'string', 'max:255'],
-            'owner_id' => ['required', 'exists:users,id'],
-        ]);
-
-        $franchise->update($validated);
-
-        return redirect()->route('franchises.index')
-            ->with('success', 'Franchise updated successfully');
-    })->name('franchises.update');
-
-    // Delete franchise
-    Route::delete('/{franchise}', function (Franchise $franchise) {
-        $franchise->delete();
-        return redirect()->route('franchises.index')
-            ->with('success', 'Franchise deleted successfully');
-    })->name('franchises.destroy');
-});
-
-// Reports Routes
-Route::prefix('reports')->middleware('auth')->group(function () {
-    // Orders report
-    Route::get('/orders', function (Request $request) {
-        $startDate = $request->input('start_date', now()->subDays(30)->format('Y-m-d'));
-        $endDate = $request->input('end_date', now()->format('Y-m-d'));
-
-        $orders = Order::whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
-            ->with('user')
-            ->latest()
-            ->paginate(10);
-
-        // Calculate total orders and revenue
-        $totalOrders = $orders->total();
-        $totalRevenue = $orders->sum('total');
-
-        // Calculate average order value
-        $averageOrderValue = $totalOrders > 0 ? $totalRevenue / $totalOrders : 0;
-
-        // Calculate growth rates
-        $previousPeriodStart = now()->subDays(60)->format('Y-m-d');
-        $previousPeriodEnd = now()->subDays(31)->format('Y-m-d');
-
-        $previousOrders = Order::whereBetween('created_at', [$previousPeriodStart . ' 00:00:00', $previousPeriodEnd . ' 23:59:59'])->count();
-        $previousRevenue = Order::whereBetween('created_at', [$previousPeriodStart . ' 00:00:00', $previousPeriodEnd . ' 23:59:59'])->sum('total');
-        $previousAOV = $previousOrders > 0 ? $previousRevenue / $previousOrders : 0;
-
-        $orderGrowth = $previousOrders > 0 ? (($totalOrders - $previousOrders) / $previousOrders) * 100 : 0;
-        $revenueGrowth = $previousRevenue > 0 ? (($totalRevenue - $previousRevenue) / $previousRevenue) * 100 : 0;
-        $aovGrowth = $previousAOV > 0 ? (($averageOrderValue - $previousAOV) / $previousAOV) * 100 : 0;
-
-        // Prepare data for Orders Over Time chart
-        $ordersByDate = Order::whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
-            ->selectRaw('DATE(created_at) as date, COUNT(*) as count, SUM(total) as revenue')
-            ->groupBy('date')
-            ->orderBy('date')
-            ->get();
-
-        $orderChartLabels = $ordersByDate->pluck('date')->toArray();
-        $orderChartData = $ordersByDate->pluck('count')->toArray();
-        $revenueChartData = $ordersByDate->pluck('revenue')->toArray();
-
-        // Prepare data for Revenue by Status chart
-        $revenueByStatus = Order::whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
-            ->selectRaw('status, SUM(total) as total')
-            ->groupBy('status')
-            ->get();
-
-        $statusChartLabels = $revenueByStatus->pluck('status')->toArray();
-        $statusChartData = $revenueByStatus->pluck('total')->toArray();
-
-        // Assuming 5% conversion rate for demonstration
-        $conversionRate = 5;
-        $conversionGrowth = 0;
-
-        $ordersByStatus = $orders->groupBy('status')
-            ->map(function ($statusOrders) {
-                return $statusOrders->count();
-            });
-
-        $customers = User::whereHas('orders')->get();
-
-        return view('reports.orders', compact(
-            'orders',
-            'totalOrders',
-            'totalRevenue',
-            'averageOrderValue',
-            'conversionRate',
-            'orderGrowth',
-            'revenueGrowth',
-            'aovGrowth',
-            'conversionGrowth',
-            'ordersByStatus',
-            'startDate',
-            'endDate',
-            'customers',
-            'orderChartLabels',
-            'orderChartData',
-            'revenueChartData',
-            'statusChartLabels',
-            'statusChartData'
-        ));
-    })->name('reports.orders');
-
-    // Payments report
-    Route::get('/payments', function (Request $request) {
-        $startDate = $request->input('start_date', now()->subDays(30)->format('Y-m-d'));
-        $endDate = $request->input('end_date', now()->format('Y-m-d'));
-
-        $payments = Payment::whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
-            ->with('user')
-            ->latest()
-            ->get();
-
-        $totalPayments = $payments->sum('amount');
-        $paymentsByStatus = $payments->groupBy('status')
-            ->map(function ($statusPayments) {
-                return $statusPayments->count();
-            });
-
-        return view('payments.index', compact('payments', 'totalPayments', 'paymentsByStatus', 'startDate', 'endDate'));
-    })->name('payments.index');
-
-    Route::prefix('payments')->middleware('auth')->group(function () {
-        Route::get('/', [PaymentController::class, 'index'])->name('payments.index');
-        Route::get('/filter', [PaymentController::class, 'filter'])->name('payments.filter');
-        Route::get('/{payment}', [PaymentController::class, 'show'])->name('payments.show');
-        Route::get('/export', [PaymentController::class, 'export'])->name('payments.export');
+        //Route::get('/', [OrderController::class, 'index'])->name('orders.index');
+        Route::get('/create', [OrderController::class, 'create'])->name('orders.create');
+        Route::post('/', [OrderController::class, 'store'])->name('orders.store');
+        Route::get('/{order}', [OrderController::class, 'show'])->name('orders.show');
+        Route::patch('/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.update.status');
+        Route::delete('/{order}', [OrderController::class, 'destroy'])->name('orders.destroy');
     });
 
-    // Products report
-    Route::get('/products', function () {
-        $topProducts = DB::table('order_items')
-            ->join('products', 'order_items.product_id', '=', 'products.id')
-            ->select('products.name', DB::raw('SUM(order_items.quantity) as total_quantity'), DB::raw('SUM(order_items.price * order_items.quantity) as total_sales'))
-            ->groupBy('products.name')
-            ->orderByDesc('total_quantity')
-            ->limit(10)
-            ->get();
+    Route::prefix('categories')->group(function () {
+        Route::get('/', [CategoryController::class, 'index'])->name('categories.index');
+        Route::get('/data', [CategoryController::class, 'getData'])->name('categories.data');
+        Route::get('/create', [CategoryController::class, 'create'])->name('categories.create');
+        Route::post('/', [CategoryController::class, 'store'])->name('categories.store');
+        Route::get('/{category}', [CategoryController::class, 'show'])->name('categories.show');
+        Route::get('/{category}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
+        Route::put('/{category}', [CategoryController::class, 'update'])->name('categories.update');
+        Route::delete('/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+    });
 
-        $lowStockProducts = Product::where('stock', '<', 10)->get();
+    Route::prefix('commissions')->group(function () {
+        Route::get('/', [CommissionController::class, 'index'])->name('commissions.index');
+        Route::get('/create', [CommissionController::class, 'create'])->name('commissions.create');
+        Route::post('/', [CommissionController::class, 'store'])->name('commissions.store');
+        Route::get('/{commission}', [CommissionController::class, 'show'])->name('commissions.show');
+        Route::get('/{commission}/edit', [CommissionController::class, 'edit'])->name('commissions.edit');
+        Route::put('/{commission}', [CommissionController::class, 'update'])->name('commissions.update');
+        Route::delete('/{commission}', [CommissionController::class, 'destroy'])->name('commissions.destroy');
+    });
 
-        return view('reports.products', compact('topProducts', 'lowStockProducts'));
-    })->name('reports.products');
+    Route::prefix('users')->group(function () {
+        Route::get('/', [UserController::class, 'index'])->name('users.index');
+        Route::get('/data', [UserController::class, 'getData'])->name('users.data');
+        Route::get('/create', [UserController::class, 'create'])->name('users.create');
+        Route::post('/', [UserController::class, 'store'])->name('users.store');
+        Route::get('/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+        Route::put('/{user}', [UserController::class, 'update'])->name('users.update');
+        Route::put('/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle.status');
+        Route::delete('/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+    });
 
-    // Export orders report to CSV
-    Route::get('/orders/export', function (Request $request) {
-        $startDate = $request->input('start_date', now()->subDays(30)->format('Y-m-d'));
-        $endDate = $request->input('end_date', now()->format('Y-m-d'));
+    Route::prefix('products')->group(function () {
+        Route::get('/', [ProductController::class, 'index'])->name('products.index');
+        Route::get('/data', [ProductController::class, 'getData'])->name('products.data');
+        Route::get('/create', [ProductController::class, 'create'])->name('products.create');
+        Route::post('/', [ProductController::class, 'store'])->name('products.store');
+        Route::get('/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
+        Route::put('/{product}', [ProductController::class, 'update'])->name('products.update');
+        Route::delete('/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+    });
 
-        $orders = Order::whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
-            ->with('user')
-            ->latest()
-            ->get();
+    Route::prefix('settings')->group(function () {
+        Route::get('/', [SettingsController::class, 'index'])->name('settings.index');
+        Route::post('/', [SettingsController::class, 'update'])->name('settings.update');
+    });
 
-        $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="orders-report.csv"',
-        ];
+    Route::prefix('franchises')->group(function () {
+        Route::get('/', [FranchiseController::class, 'index'])->name('franchises.index');
+        Route::get('/create', [FranchiseController::class, 'create'])->name('franchises.create');
+        Route::post('/', [FranchiseController::class, 'store'])->name('franchises.store');
+        Route::get('/{franchise}/edit', [FranchiseController::class, 'edit'])->name('franchises.edit');
+        Route::put('/{franchise}', [FranchiseController::class, 'update'])->name('franchises.update');
+        Route::delete('/{franchise}', [FranchiseController::class, 'destroy'])->name('franchises.destroy');
+    });
 
-        $callback = function () use ($orders) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, ['Order ID', 'Customer', 'Total', 'Status', 'Date']);
+    Route::prefix('summary')->group(function () {
+        Route::get('/', [ReportController::class, 'index'])->name('summary');
+        Route::get('/data', [ReportController::class, 'getSummary'])->name('summary.data');
+    });
 
-            foreach ($orders as $order) {
-                fputcsv($file, [
-                    $order->id,
-                    $order->user->name,
-                    $order->total,
-                    $order->status,
-                    $order->created_at->format('Y-m-d H:i:s')
-                ]);
-            }
+    Route::prefix('reports')->group(function () {
+        Route::get('/orders', [ReportController::class, 'orders'])->name('reports.orders');
+        Route::get('/orders/export', [ReportController::class, 'exportOrders'])->name('reports.orders.export');
+        Route::get('/products', [ReportController::class, 'products'])->name('reports.products');
+    
+        Route::get('/payments', [PaymentReportController::class, 'index'])->name('reports.payments');
+        Route::get('/payments/export', [PaymentReportController::class, 'export'])->name('reports.payments.export');
+    
+        // If you want a separate payment module (filter, show, export)
+        Route::prefix('payments')->group(function () {
+            Route::get('/', [PaymentController::class, 'index'])->name('payments.index');
+            Route::get('/filter', [PaymentController::class, 'filter'])->name('payments.filter');
+            Route::get('/{payment}', [PaymentController::class, 'show'])->name('payments.show');
+            Route::get('/export', [PaymentController::class, 'export'])->name('payments.export');
+        });
+    });
 
-            fclose($file);
-        };
+    Route::prefix('representatives')->group(function () {
+        Route::get('/', [StateRepresentativeController::class, 'index'])->name('representatives.index');
+        Route::get('/create', [StateRepresentativeController::class, 'create'])->name('representatives.create');
+        Route::post('/', [StateRepresentativeController::class, 'store'])->name('representatives.store');
+        Route::get('/{representative}/edit', [StateRepresentativeController::class, 'edit'])->name('representatives.edit');
+        Route::put('/{representative}', [StateRepresentativeController::class, 'update'])->name('representatives.update');
+        Route::delete('/{representative}', [StateRepresentativeController::class, 'destroy'])->name('representatives.destroy');
+        Route::patch('/{representative}/toggle-status', [StateRepresentativeController::class, 'toggleStatus'])->name('representatives.toggle-status');
+    });
 
-        return response()->stream($callback, 200, $headers);
-    })->name('reports.orders.export');
+    Route::prefix('admin')->group(function () {
+        Route::get('/', [AdminController::class, 'index'])->name('admin.index');
+        Route::get('/create', [AdminController::class, 'create'])->name('admin.create');
+        Route::post('/', [AdminController::class, 'store'])->name('admin.store');
+        Route::get('/{admin}/edit', [AdminController::class, 'edit'])->name('admin.edit');
+        Route::put('/{admin}', [AdminController::class, 'update'])->name('admin.update');
+        Route::delete('/{admin}', [AdminController::class, 'destroy'])->name('admin.destroy');
+        Route::patch('/{admin}/toggle-status', [AdminController::class, 'toggleStatus'])->name('admin.toggle-status');
+    
+        // Profile routes
+        Route::get('/profile', [AdminController::class, 'profile'])->name('admin.profile');
+        Route::put('/profile', [AdminController::class, 'updateProfile'])->name('admin.profile.update');
+    });
 
-    // Export payments report to CSV
-    Route::get('/payments/export', function (Request $request) {
-        $startDate = $request->input('start_date', now()->subDays(30)->format('Y-m-d'));
-        $endDate = $request->input('end_date', now()->format('Y-m-d'));
+    Route::get('/ingredients/data', [IngredientController::class, 'getData'])->name('ingredients.data');
 
-        $payments = Payment::whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
-            ->with('user')
-            ->latest()
-            ->get();
+    Route::resource('ingredients', IngredientController::class);
+    Route::resource('advertisements', AdvertisementController::class);
 
-        $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="payments-report.csv"',
-        ];
+    Route::prefix('vendors')->group(function () {
+        Route::get('/', [VendorController::class, 'index'])->name('vendors.index');
+        Route::get('/data', [VendorController::class, 'getData'])->name('vendors.data');
+        Route::get('/create', [VendorController::class, 'create'])->name('vendors.create');
+        Route::post('/', [VendorController::class, 'store'])->name('vendors.store');
+        Route::get('/{id}/edit', [VendorController::class, 'show'])->name('vendors.edit');
+        Route::put('/{user}/update', [VendorController::class, 'update'])->name('vendors.update');
+        Route::delete('/{user}', [VendorController::class, 'destroy'])->name('vendors.destroy');
+        Route::patch('/{user}/toggle-status', [VendorController::class, 'toggleStatus'])->name('vendors.toggle-status');
+        Route::patch('/{user}/toggle-verification', [VendorController::class, 'toggleVerification'])->name('vendors.toggle-verification');
+    });
 
-        $callback = function () use ($payments) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, ['Payment ID', 'Customer', 'Amount', 'Status', 'Transaction ID', 'Date']);
+    Route::group([
+        'prefix'     => 'admin/log-viewer',
+        'namespace'  => 'Arcanedev\LogViewer\Http\Controllers',
+    ], function () {
+        Route::get('/', 'LogViewerController@index')->name('log-viewer::dashboard');
+        Route::get('list', 'LogViewerController@listLogs')->name('log-viewer::logs.list');
+        Route::delete('delete', 'LogViewerController@delete')->name('log-viewer::logs.delete');
+        Route::get('{date}', 'LogViewerController@show')->name('log-viewer::logs.show');
+        Route::get('{date}/download', 'LogViewerController@download')->name('log-viewer::logs.download');
+        Route::get('{date}/{level}', 'LogViewerController@showByLevel')->name('log-viewer::logs.filter');
+    });
 
-            foreach ($payments as $payment) {
-                fputcsv($file, [
-                    $payment->id,
-                    $payment->user->name,
-                    $payment->amount,
-                    $payment->status,
-                    $payment->transaction_id,
-                    $payment->created_at->format('Y-m-d H:i:s')
-                ]);
-            }
-
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
-    })->name('reports.payments.export');
 });
 
-// Profile Routes
-Route::prefix('profile')->middleware('auth')->group(function () {
-    // Show profile
-    Route::get('/', function () {
-        $user = Auth::user();
-        return view('profile.index', compact('user'));
-    })->name('profile.index');
-
-    // Update profile
-    Route::put('/', function (Request $request) {
-        $user = Auth::user();
-
-        $validated = $request->validate([
-            'firstname' => ['required', 'string', 'max:255'],
-            'lastname' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'current_password' => ['nullable', 'required_with:password', function ($attribute, $value, $fail) use ($user) {
-                if (!Hash::check($value, $user->password)) {
-                    $fail('The current password is incorrect.');
-                }
-            }],
-            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
-        ]);
-
-        $userData = [
-            'firstname' => $validated['firstname'],
-            'lastname' => $validated['lastname'],
-            'email' => $validated['email'],
-        ];
-
-        if (!empty($validated['password'])) {
-            $userData['password'] = Hash::make($validated['password']);
-        }
-
-        $user->update($userData);
-
-        return redirect()->route('profile.index')
-            ->with('success', 'Profile updated successfully');
-    })->name('profile.update');
-});
-
-// Login Routes
-Route::get('/login', function () {
-    return view('auth.login');
-})->middleware('guest')->name('login');
-
-Route::post('/login', function (Request $request) {
-    $credentials = $request->validate([
-        'email' => ['required', 'email'],
-        'password' => ['required'],
-    ]);
-
-    $remember = $request->boolean('remember');
-
-    if (Auth::attempt($credentials, $remember)) {
-        $request->session()->regenerate();
-        return redirect()->intended('dashboard');
-    }
-
-    return back()->withErrors([
-        'email' => 'The provided credentials do not match our records.',
-    ])->onlyInput('email');
-})->middleware('guest');
-
-// Registration Routes
-Route::get('/register', function () {
-    return view('auth.register');
-})->middleware('guest')->name('register.show');
-
-Route::post('/register', function (Request $request) {
-    $validated = $request->validate([
-        'firstname' => ['required', 'string', 'max:255'],
-        'lastname' => ['required', 'string', 'max:255'],
-        'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-        'password' => ['required', 'string', 'min:8', 'confirmed'],
-    ]);
-
-    $user = User::create([
-        'firstname' => $validated['firstname'],
-        'lastname' => $validated['lastname'],
-        'email' => $validated['email'],
-        'password' => Hash::make($validated['password']),
-        'role' => 'customer',
-        'referral_code' => Str::random(10),
-    ]);
-
-    event(new Registered($user));
-    Auth::login($user);
-
-    return redirect()->route('dashboard');
-})->middleware('guest')->name('register');
-
-// Logout Route
-Route::post('/logout', function (Request $request) {
-    Auth::logout();
-    $request->session()->invalidate();
-    $request->session()->regenerateToken();
-    return redirect('/');
-})->middleware('auth')->name('logout');
-
-// Password Reset Routes
-Route::get('/forgot-password', function () {
-    return view('auth.forgot-password');
-})->middleware('guest')->name('password.request');
-
-Route::post('/forgot-password', function (Request $request) {
-    $request->validate([
-        'email' => ['required', 'email'],
-    ]);
-
-    $status = Password::sendResetLink(
-        $request->only('email')
-    );
-
-    return $status === Password::RESET_LINK_SENT
-        ? back()->with(['status' => __($status)])
-        : back()->withErrors(['email' => __($status)]);
-})->middleware('guest')->name('password.email');
-
-Route::get('/reset-password/{token}', function (string $token) {
-    return view('auth.reset-password', ['token' => $token]);
-})->middleware('guest')->name('password.reset');
-
-Route::post('/reset-password', function (Request $request) {
-    $request->validate([
-        'token' => ['required'],
-        'email' => ['required', 'email'],
-        'password' => ['required', 'min:8', 'confirmed'],
-    ]);
-
-    $status = Password::reset(
-        $request->only('email', 'password', 'password_confirmation', 'token'),
-        function (User $user, string $password) {
-            $user->forceFill([
-                'password' => Hash::make($password)
-            ])->setRememberToken(Str::random(60));
-
-            $user->save();
-        }
-    );
-
-    return $status === Password::PASSWORD_RESET
-        ? redirect()->route('login')->with('status', __($status))
-        : back()->withErrors(['email' => [__($status)]]);
-})->middleware('guest')->name('password.update');
-
-// Email Verification Routes
-Route::get('/email/verify', function () {
-    return view('auth.verify-email');
-})->middleware('auth')->name('verification.notice');
-
-Route::get('/email/verify/{id}/{hash}', function (Request $request) {
-    $user = User::find($request->route('id'));
-
-    if (!$user || !hash_equals(
-        sha1($user->getEmailForVerification()),
-        $request->route('hash')
-    )) {
-        throw new AuthorizationException;
-    }
-
-    if ($user->hasVerifiedEmail()) {
-        return redirect()->intended('dashboard');
-    }
-
-    $user->markEmailAsVerified();
-
-    return redirect()->intended('dashboard')->with('status', 'Your email has been verified!');
-})->middleware(['auth', 'signed'])->name('verification.verify');
-
-Route::post('/email/verification-notification', function (Request $request) {
-    $request->user()->sendEmailVerificationNotification();
-    return back()->with('status', 'Verification link sent!');
-})->middleware(['auth', 'throttle:6,1'])->name('verification.send');
-
-// Admin Routes
-Route::middleware(['auth'])->prefix('admin')->group(function () {
-    Route::get('/', [AdminController::class, 'index'])->name('admin.index');
-    Route::get('/create', [AdminController::class, 'create'])->name('admin.create');
-    Route::post('/', [AdminController::class, 'store'])->name('admin.store');
-    Route::get('/{admin}', [AdminController::class, 'show'])->name('admin.show');
-    Route::get('/{admin}/edit', [AdminController::class, 'edit'])->name('admin.edit');
-    Route::put('/{admin}', [AdminController::class, 'update'])->name('admin.update');
-    Route::delete('/{admin}', [AdminController::class, 'destroy'])->name('admin.destroy');
-    Route::patch('/{admin}/toggle-status', [AdminController::class, 'toggleStatus'])->name('admin.toggle-status');
-
-    // Profile routes
-    Route::get('/profile', [AdminController::class, 'profile'])->name('admin.profile');
-    Route::put('/profile', [AdminController::class, 'updateProfile'])->name('admin.profile.update');
-});
-
-// State Representatives Routes
-Route::prefix('representatives')->middleware('auth')->group(function () {
-    Route::get('/', [StateRepresentativeController::class, 'index'])->name('representatives.index');
-    Route::get('/create', [StateRepresentativeController::class, 'create'])->name('representatives.create');
-    Route::post('/', [StateRepresentativeController::class, 'store'])->name('representatives.store');
-    Route::get('/{representative}/edit', [StateRepresentativeController::class, 'edit'])->name('representatives.edit');
-    Route::put('/{representative}', [StateRepresentativeController::class, 'update'])->name('representatives.update');
-    Route::delete('/{representative}', [StateRepresentativeController::class, 'destroy'])->name('representatives.destroy');
-    Route::patch('/{representative}/toggle-status', [StateRepresentativeController::class, 'toggleStatus'])->name('representatives.toggle-status');
-});
-
-Route::resource('ingredients', IngredientController::class);
-
-// Vendor Routes
-Route::prefix('vendors')->middleware('auth')->group(function () {
-    Route::get('/', [VendorController::class, 'index'])->name('vendors.index');
-    Route::get('/create', [VendorController::class, 'create'])->name('vendors.create');
-    Route::post('/', [VendorController::class, 'store'])->name('vendors.store');
-    Route::get('/{vendor}', [VendorController::class, 'show'])->name('vendors.show');
-    Route::get('/{vendor}/edit', [VendorController::class, 'edit'])->name('vendors.edit');
-    Route::put('/{vendor}', [VendorController::class, 'update'])->name('vendors.update');
-    Route::delete('/{vendor}', [VendorController::class, 'destroy'])->name('vendors.destroy');
-    Route::patch('/{vendor}/toggle-status', [VendorController::class, 'toggleStatus'])->name('vendors.toggle-status');
-    Route::patch('/{vendor}/toggle-verification', [VendorController::class, 'toggleVerification'])->name('vendors.toggle-verification');
-});

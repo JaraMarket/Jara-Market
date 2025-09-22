@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Add New Product')
+@section('title', 'Add New Food')
 
 @section('content')
     <div class="py-6">
@@ -9,7 +9,7 @@
             <div class="md:flex md:items-center md:justify-between mb-6">
                 <div class="flex-1 min-w-0">
                     <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-                        Add New Product
+                        Add New Food
                     </h2>
                     <p class="mt-1 text-sm text-gray-500">
                         Create a new food product with ingredients and preparation steps.
@@ -24,7 +24,7 @@
                                 d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
                                 clip-rule="evenodd" />
                         </svg>
-                        Back to Products
+                        Back to Foods
                     </a>
                 </div>
             </div>
@@ -40,11 +40,11 @@
                         <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                             <div class="sm:col-span-4">
                                 <label for="name" class="block text-sm font-medium text-gray-700">
-                                    Product Name <span class="text-red-500">*</span>
+                                    Food Name <span class="text-red-500">*</span>
                                 </label>
                                 <div class="mt-1">
                                     <input type="text" name="name" id="name" value="{{ old('name') }}" required
-                                        class="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md @error('name') border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500 @enderror">
+                                    class="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md @error('name') border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500 @enderror">
                                 </div>
                                 @error('name')
                                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
@@ -68,7 +68,7 @@
                                     <textarea id="description" name="description" rows="3"
                                         class="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md @error('description') border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500 @enderror">{{ old('description') }}</textarea>
                                 </div>
-                                <p class="mt-2 text-sm text-gray-500">Brief description of the product.</p>
+                                <p class="mt-2 text-sm text-gray-500">Brief description of the food.</p>
                                 @error('description')
                                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
@@ -103,85 +103,87 @@
                                 @enderror
                             </div>
 
-                            <!-- Ingredients -->
-                            <div class="col-span-2">
-                                <label class="block text-sm font-medium text-gray-700">Ingredients</label>
-                                <div id="ingredients-container" class="mt-2 space-y-4">
-                                    <div class="ingredient-item flex gap-4">
-                                        <div class="flex-1">
-                                            <select name="ingredients[0][ingredient_id]" class="ingredient-select block rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
-                                                <option value="">Select Ingredient</option>
-                                                @foreach($ingredients as $ingredient)
-                                                    <option value="{{ $ingredient->id }}" 
-                                                            data-price="{{ $ingredient->price }}"
-                                                            data-unit="{{ $ingredient->unit }}">
-                                                        {{ $ingredient->name }} ({{ $ingredient->price }}/{{ $ingredient->unit }})
+                        <div class="col-span-2">
+                        <label class="block text-sm font-medium text-gray-700">Ingredients</label>
+                        <div id="ingredients-container" class="mt-2 space-y-4">
+                            @foreach($ingredientss as $index => $ingredient)
+                            <div class="ingredient-item flex gap-4">
+                                <div class="flex-1">
+                                    <select name="ingredients[{{ $index }}][ingredient_id]" class="ingredient-select block rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+                                        <option value="">Select Ingredient</option>
+                                        @foreach($ingredientss as $ing)
+                                            <option value="{{ $ing->id }}" 
+                                                    data-price="{{ $ing->price }}"
+                                                    data-unit="{{ $ing->unit }}"
+                                                    {{ $ing->id == $ingredient->id ? 'selected' : '' }}>
+                                                {{ $ing->name }} ({{ $ing->price }}/{{ $ing->unit }})
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="w-32">
+                                    <input type="number" name="ingredients[{{ $index }}][quantity]" min="0.01" step="0.01" value="1" class="quantity-input block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+                                </div>
+                                <div class="w-32">
+                                    <select name="ingredients[{{ $index }}][unit]" class="unit-select block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+                                        @foreach($uoms as $uom)
+                                            <option value="{{ $uom->code }}" 
+                                                            data-name="{{ $uom->name }}"
+                                                            >
+                                                        {{ $uom->name }}
                                                     </option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                        <div class="w-32">
-                                            <input type="number" name="ingredients[0][quantity]" min="0.01" step="0.01" value="1" class="quantity-input block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
-                                        </div>
-                                        <div class="w-32">
-                                            <select name="ingredients[0][unit]" class="unit-select block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
-                                                <option value="piece">Piece</option>
-                                                <option value="kg">Kilogram</option>
-                                                <option value="g">Gram</option>
-                                                <option value="l">Liter</option>
-                                                <option value="ml">Milliliter</option>
-                                                <option value="cup">Cup</option>
-                                                <option value="tbsp">Tablespoon</option>
-                                                <option value="tsp">Teaspoon</option>
-                                            </select>
-                                        </div>
-                                        <div class="flex items-center">
-                                            <button type="button" class="remove-ingredient text-red-600 hover:text-red-800">
-                                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </div>
+                                            @endforeach
+                                    </select>
                                 </div>
-                                <button type="button" id="add-ingredient" class="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                                    <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
-                                    </svg>
-                                    Add Ingredient
-                                </button>
-                            </div>
-
-                            <div class="sm:col-span-6">
-                                <label for="preparation_steps" class="block text-sm font-medium text-gray-700">
-                                    Preparation Steps <span class="text-red-500">*</span>
-                                </label>
-                                <div class="mt-1">
-                                    <textarea id="preparation_steps" name="preparation_steps" rows="6" required
-                                        class="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md @error('preparation_steps') border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500 @enderror"
-                                        placeholder="Enter each step on a new line">{{ old('preparation_steps') }}</textarea>
+                                <div class="flex items-center">
+                                    <button type="button" class="remove-ingredient text-red-600 hover:text-red-800">
+                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
                                 </div>
-                                <p class="mt-2 text-sm text-gray-500">Detailed steps to prepare this food item.</p>
-                                @error('preparation_steps')
-                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
                             </div>
-
-                            <div class="sm:col-span-6">
-                                <label for="image" class="block text-sm font-medium text-gray-700">Image</label>
-                                <div class="mt-1 flex items-center">
-                                    <img id="image-preview" class="hidden h-32 w-32 object-cover rounded-lg" src="#" alt="Image preview">
-                                    <div class="ml-4">
-                                        <input type="file" name="image" id="image" accept="image/*" 
-                                            class="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md @error('image') border-red-500 @enderror"
-                                            onchange="previewImage(this)">
-                                    </div>
-                                </div>
-                                @error('image')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
+                            @endforeach
                         </div>
+                        <div class="mt-2">
+                            <button type="button" id="add-ingredient" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                <svg class="-ml-0.5 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                </svg>
+                                Add Ingredient
+                            </button>
+                        </div>
+                    </div>
+                        <div class="sm:col-span-6">
+                            <label for="preparation_steps" class="block text-sm font-medium text-gray-700">
+                                Preparation Steps <span class="text-red-500">*</span>
+                            </label>
+                            <div class="mt-1">
+                                <textarea id="preparation_steps" name="preparation_steps" rows="6" required
+                                    class="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md @error('preparation_steps') border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500 @enderror"
+                                    placeholder="Enter each step on a new line">{{ old('preparation_steps') }}</textarea>
+                            </div>
+                            <p class="mt-2 text-sm text-gray-500">Detailed steps to prepare this food item.</p>
+                            @error('preparation_steps')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="sm:col-span-6">
+                            <label for="image" class="block text-sm font-medium text-gray-700">Image</label>
+                            <div class="mt-1 flex items-center">
+                                <img id="image-preview" class="hidden h-32 w-32 object-cover rounded-lg" src="#" alt="Image preview">
+                                <div class="ml-4">
+                                    <input type="file" name="image_url" id="image" accept="image/*" 
+                                        class="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md @error('image') border-red-500 @enderror"
+                                        onchange="previewImage(this)">
+                                </div>
+                            </div>
+                            @error('image')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
                     </div>
 
                     <!-- Form Actions -->
@@ -248,47 +250,46 @@
 
             // Add new ingredient
             addIngredientButton.addEventListener('click', function() {
-                const newIngredient = document.createElement('div');
-                newIngredient.className = 'ingredient-item flex gap-4 mt-4';
-                newIngredient.innerHTML = `
-                    <div class="flex-1">
-                        <select name="ingredients[${ingredientCount}][ingredient_id]" class="ingredient-select block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
-                            <option value="">Select Ingredient</option>
-                            @foreach($ingredients as $ingredient)
-                                <option value="{{ $ingredient->id }}" 
-                                        data-price="{{ $ingredient->price }}"
-                                        data-unit="{{ $ingredient->unit }}">
-                                    {{ $ingredient->name }} ({{ $ingredient->price }}/{{ $ingredient->unit }})
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="w-32">
-                        <input type="number" name="ingredients[${ingredientCount}][quantity]" min="0.01" step="0.01" value="1" class="quantity-input block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
-                    </div>
-                    <div class="w-32">
-                        <select name="ingredients[${ingredientCount}][unit]" class="unit-select block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
-                            <option value="piece">Piece</option>
-                            <option value="kg">Kilogram</option>
-                            <option value="g">Gram</option>
-                            <option value="l">Liter</option>
-                            <option value="ml">Milliliter</option>
-                            <option value="cup">Cup</option>
-                            <option value="tbsp">Tablespoon</option>
-                            <option value="tsp">Teaspoon</option>
-                        </select>
-                    </div>
-                    <div class="flex items-center">
-                        <button type="button" class="remove-ingredient text-red-600 hover:text-red-800">
-                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                        </button>
-                    </div>
-                `;
-                ingredientsContainer.appendChild(newIngredient);
-                ingredientCount++;
-            });
+    const newIngredient = document.createElement('div');
+    newIngredient.className = 'ingredient-item flex gap-4 mt-4';
+
+    newIngredient.innerHTML = `
+        <div class="w-3/4">
+            <select name="ingredients[${ingredientCount}][ingredient_id]" class="ingredient-select block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+                <option value="">Select Ingredient</option>
+                @foreach($ingredients as $ingredient)
+                    <option value="{{ $ingredient->id }}" 
+                            data-price="{{ $ingredient->price }}"
+                            data-unit="{{ $ingredient->unit }}">
+                        {{ $ingredient->name }} ({{ $ingredient->price }}/{{ $ingredient->unit }})
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        <div class="w-40">
+            <input type="number" name="ingredients[${ingredientCount}][quantity]" min="0.01" step="0.01" value="1" class="quantity-input block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+        </div>
+        <div class="w-40">
+            <select name="ingredients[${ingredientCount}][unit]" class="unit-select block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+                @foreach($uoms as $uom)
+                    <option value="{{ $uom->code }}">
+                        {{ $uom->name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        <div class="flex items-center">
+            <button type="button" class="remove-ingredient text-red-600 hover:text-red-800">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+            </button>
+        </div>
+    `;
+    
+    ingredientsContainer.appendChild(newIngredient);
+    ingredientCount++;
+});
 
             // Remove ingredient
             ingredientsContainer.addEventListener('click', function(e) {
@@ -334,7 +335,8 @@
                     'cup': { 'l': 0.25, 'ml': 250, 'tbsp': 16, 'tsp': 48 },
                     'tbsp': { 'l': 0.015, 'ml': 15, 'cup': 0.0625, 'tsp': 3 },
                     'tsp': { 'l': 0.005, 'ml': 5, 'cup': 0.0208, 'tbsp': 0.333 },
-                    'piece': { 'kg': 1, 'g': 1 }
+                    'piece': { 'kg': 1, 'g': 1 },
+                    'por': { 'kg': 1, 'g': 1 }
                 };
 
                 if (fromUnit === toUnit) return quantity;

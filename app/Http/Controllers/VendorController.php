@@ -3,10 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Wallet;
+use App\Models\Order;
+use Exception;
+use App\Enums\UserPermissionsEnum;
+use App\Http\Requests\UserProfileRequest;
 use App\Models\Vendor;
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
+use Yajra\DataTables\Facades\DataTables;
 
 class VendorController extends Controller
 {
@@ -15,15 +19,47 @@ class VendorController extends Controller
      */
     public function index()
     {
-        // Get all vendors with their associated users
-        $vendors = Vendor::with('user')
-            ->whereHas('user', function($query) {
-                $query->where('role', 'VENDOR');
-            })
-            ->latest()
-            ->paginate(10);
+        return view('vendors.index');
+    }
 
-        return view('vendors.index', compact('vendors'));
+    public function getData(Request $request)
+    {
+        $query = User::where('role', UserPermissionsEnum::VENDOR());
+
+        $query->when($request->status, function ($q) use ($request) {
+            $q->where('is_active', $request->status === 'active' ? 1 : 0);
+        }, function ($q) {
+            $q->whereDate('created_at', now()->toDateString());
+        });
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($sub) use ($search) {
+                $sub->where('firstname', 'like', "%{$search}%")
+                    ->orWhere('lastname', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('phone_number', 'like', "%{$search}%")
+                    ->orWhere('business_name', 'like', "%{$search}%")
+                    ->orWhere('business_address', 'like', "%{$search}%");
+            });
+        }
+
+        return DataTables::of($query)
+            ->addIndexColumn()
+            ->editColumn('created_at', fn($vendor) => $vendor->created_at->format('M d, Y H:i'))
+            ->editColumn('status', function ($vendor) {
+                return $vendor->is_active
+                    ? '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Active</span>'
+                    : '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Inactive</span>';
+            })
+            ->addColumn('actions', function ($vendor) {
+                return '
+                    <a href="'.route('vendors.edit', $vendor).'" class="text-green-600 hover:text-green-900 mr-3">Edit</a>
+                    <button type="button" class="text-red-600 hover:text-red-900 delete-vendor" data-vendor-id="'.$vendor->id.'">Delete</button>
+                ';
+            })
+            ->rawColumns(['status', 'actions'])
+            ->make(true);
     }
 
     /**
@@ -37,111 +73,60 @@ class VendorController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(UserProfileRequest $request)
     {
-        \Log::info('Vendor creation started');
-        \Log::info('Request data:', $request->all());
-
         try {
-            $validated = $request->validate([
-                'business_name' => ['required', 'string', 'max:255'],
-                'business_address' => ['required', 'string'],
-                'business_phone' => ['required', 'string', 'max:20'],
-                'business_email' => ['required', 'email', 'unique:vendors'],
-                'business_registration_number' => ['nullable', 'string', 'max:255'],
-                'tax_identification_number' => ['nullable', 'string', 'max:255'],
-                'business_description' => ['nullable', 'string'],
-                'bank_name' => ['nullable', 'string', 'max:255'],
-                'account_number' => ['nullable', 'string', 'max:255'],
-                'account_name' => ['nullable', 'string', 'max:255'],
-                'firstname' => ['required', 'string', 'max:255'],
-                'lastname' => ['required', 'string', 'max:255'],
-                'email' => ['required', 'email', 'unique:users'],
-                'password' => ['required', 'string', 'min:8', 'confirmed'],
-            ]);
-
-            \Log::info('Validation passed');
-
-            // Create user with VENDOR role
+            $data = $request->validated();
             $user = User::create([
-                'firstname' => $validated['firstname'],
-                'lastname' => $validated['lastname'],
-                'email' => $validated['email'],
-                'password' => Hash::make($validated['password']),
-                'role' => 'VENDOR'
-            ]);
-
-            \Log::info('User created:', ['user_id' => $user->id]);
-
-            // Create vendor
-            $vendor = Vendor::create([
-                'business_name' => $validated['business_name'],
-                'business_address' => $validated['business_address'],
-                'business_phone' => $validated['business_phone'],
-                'business_email' => $validated['business_email'],
-                'business_registration_number' => $validated['business_registration_number'] ?? null,
-                'tax_identification_number' => $validated['tax_identification_number'] ?? null,
-                'business_description' => $validated['business_description'] ?? null,
-                'bank_name' => $validated['bank_name'] ?? null,
-                'account_number' => $validated['account_number'] ?? null,
-                'account_name' => $validated['account_name'] ?? null,
-                'user_id' => $user->id,
+                'firstname' => $data['firstname'],
+                'lastname' => $data['lastname'],
+                'email' => $data['email'],
+                'password' => $data['password'],
+                'role' => UserPermissionsEnum::VENDOR(),
+                'business_name' => $data['business_name'],
+                'business_address' => $data['business_address'],
                 'is_active' => true,
-                'is_verified' => false
+                'bank_name' => $data['bank_name'] ?? null,
+                'account_number' => $validatadated['account_number'] ?? null,
+                'account_name' => $data['account_name'] ?? null,
             ]);
 
-            \Log::info('Vendor created:', ['vendor_id' => $vendor->id]);
-
-            return redirect()->route('vendors.index')
+            Wallet::create(['user_id' => $user->id]);
+        
+            return redirect()->back()
                 ->with('success', 'Vendor created successfully');
 
-        } catch (\Exception $e) {
-            \Log::error('Error creating vendor:', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            
-            return back()
-                ->withInput()
-                ->withErrors(['error' => 'An error occurred while creating the vendor. Please try again.']);
+        } catch (Exception $e) {      
+            return redirect()->back()
+                ->with('error', $e->getMessage());
         }
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Vendor $vendor)
+    public function show($id)
     {
-        return view('vendors.show', compact('vendor'));
-    }
+        $user = User::findOrFail($id);
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Vendor $vendor)
-    {
-        return view('vendors.edit', compact('vendor'));
+        $orders = Order::whereHas('items', function ($query) use ($user) {
+            $query->where('vendor_id', $user->id);
+        })->with(['items.product', 'items.vendor'])
+          ->get();
+        
+        if (request()->wantsJson()) {
+            return response()->json($user);
+        }
+        return view('vendors.edit', compact(['user','orders']));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Vendor $vendor)
+    public function update(UserProfileRequest $request, User $user)
     {
-        $validated = $request->validate([
-            'business_name' => ['required', 'string', 'max:255'],
-            'business_address' => ['required', 'string'],
-            'business_phone' => ['required', 'string', 'max:20'],
-            'business_email' => ['required', 'email', 'unique:vendors,business_email,' . $vendor->id],
-            'business_registration_number' => ['nullable', 'string', 'max:255'],
-            'tax_identification_number' => ['nullable', 'string', 'max:255'],
-            'business_description' => ['nullable', 'string'],
-            'bank_name' => ['nullable', 'string', 'max:255'],
-            'account_number' => ['nullable', 'string', 'max:255'],
-            'account_name' => ['nullable', 'string', 'max:255'],
-        ]);
-
-        $vendor->update($validated);
+        $data = $request->validated();
+        $user->update($data);
 
         return redirect()->route('vendors.index')
             ->with('success', 'Vendor updated successfully');
@@ -150,7 +135,7 @@ class VendorController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Vendor $vendor)
+    public function destroy(User $vendor)
     {
         $vendor->delete();
         return redirect()->route('vendors.index')

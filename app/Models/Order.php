@@ -2,33 +2,45 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Order extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
+        'order_date',
+        'reference',
         'user_id',
-        'status',
+        'address_id',
+        'delivery_type',
+        'shipping_fee',
+        'service_charge',
+        'vat',
         'total',
-        'meal_prep',
+        'status',
+        'remarks',
+        'audio'
     ];
 
-    /**
-     * Get the user that owns the order.
-     */
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
+    protected $casts = [
+        'order_date' => 'datetime',
+    ];
 
-    /**
-     * Get the items for the order.
-     */
     public function items()
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function address()
+    {
+        return $this->belongsTo(Address::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

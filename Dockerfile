@@ -1,48 +1,43 @@
-# Use the official PHP image with Apache
-FROM php:8.1-apache
+FROM php:8.2-apache
 
-# Set working directory
-WORKDIR /var/www/html
+# Enable Apache Rewrite Module
+RUN a2enmod rewrite
 
-# Install system dependencies
+# Install dependencies and PHP extensions
 RUN apt-get update && apt-get install -y \
     git \
+    curl \
+    zip \
     unzip \
-    libpng-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
-    libsqlite3-dev \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd pdo pdo_sqlite
-
-# Enable Apache mod_rewrite
-RUN a2enmod rewrite
+    libzip-dev \
+    libonig-dev \
+    libxml2-dev \
+    supervisor \
+    librdkafka-dev \
+    default-mysql-client \
+    && docker-php-ext-install pdo pdo_mysql zip \
+    && pecl install rdkafka redis \
+    && docker-php-ext-enable rdkafka redis \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copy existing application directory contents
+# Copy project files
 COPY . /var/www/html
 
-# Set Apache DocumentRoot to the public directory
-RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
+# Copy Supervisor config
+COPY ./supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Copy existing application directory permissions
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html/storage
+# Copy start script
+COPY ./start.sh /start.sh
+RUN chmod +x /start.sh
 
-# Create SQLite database file
-RUN touch /var/www/html/database/database.sqlite \
-    && chown www-data:www-data /var/www/html/database/database.sqlite
+# Set working directory
+WORKDIR /var/www/html
 
-# Install PHP dependencies
-RUN composer install
+# Expose Apache port
+EXPOSE 80 6001
 
-# Run migrations
-RUN php artisan migrate --force
-
-# Expose port 80
-EXPOSE 80
-
-# Start Apache server
-CMD ["apache2-foreground"]
+# Start container
+CMD ["/start.sh"]

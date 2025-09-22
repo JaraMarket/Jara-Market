@@ -23,7 +23,6 @@ class RegisterOTPRequest extends FormRequest
     {
         return [
             "otp" => "required|integer|digits:4",
-
         ];
     }
 

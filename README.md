@@ -1,66 +1,161 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# JaraMarket — Bringing the Market to Your Doorstep
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## 📖 Story: Why JaraMarket?
+In the hustle and bustle of daily life, one thing remains constant — everyone needs to eat.  
+But what happens when time runs short, traffic gets overwhelming, or the stress of a crowded market becomes just too much?  
 
-## About Laravel
+At **JaraMarket**, we saw a problem and chose to build a solution rooted in **convenience, community, and care**.  
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+> **Market at Your Door** — that’s more than just a tagline. It’s our promise.
 
--   [Simple, fast routing engine](https://laravel.com/docs/routing).
--   [Powerful dependency injection container](https://laravel.com/docs/container).
--   Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
--   Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
--   Database agnostic [schema migrations](https://laravel.com/docs/migrations).
--   [Robust background job processing](https://laravel.com/docs/queues).
--   [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+We believe everyone deserves access to **fresh, local ingredients** without sacrificing their time or peace of mind. Whether you're a busy professional, a student juggling schedules, or a parent managing the home front, **JaraMarket** is here to make food shopping one less thing to worry about.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **We Source, You Cook**: You send us your recipe or select from our featured meals — we hit the markets, gather every item you need, and deliver them to your doorstep **within minutes**.  
+- **More Than Food**: JaraMarket is not just a food tech platform. It’s a **movement** for people who still believe in the magic of home-cooked meals but need a little help making it happen.  
 
-## Learning Laravel
+The market is changing. And with **JaraMarket**, it’s coming to your door. 🛒
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+---
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## ⚙️ Project Setup
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+This project is built with **Laravel 10, Kafka, Redis, MySQL, and WebSockets** running inside **Docker**.
 
-## Laravel Sponsors
+### 🔑 Prerequisites
+Make sure you have:
+- Docker & Docker Compose installed
+- Git installed
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+---
 
-### Premium Partners
+## 🛠️ 1. Clone and Build
 
--   **[Vehikl](https://vehikl.com/)**
--   **[Tighten Co.](https://tighten.co)**
--   **[WebReinvent](https://webreinvent.com/)**
--   **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
--   **[64 Robots](https://64robots.com)**
--   **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
--   **[Cyber-Duck](https://cyber-duck.co.uk)**
--   **[DevSquad](https://devsquad.com/hire-laravel-developers)**
--   **[Jump24](https://jump24.co.uk)**
--   **[Redberry](https://redberry.international/laravel/)**
--   **[Active Logic](https://activelogic.com)**
--   **[byte5](https://byte5.de)**
--   **[OP.GG](https://op.gg)**
+```bash
+git clone https://github.com/JaraMarket/jaramarket.git
+cd jaramarket
+```
 
-## Contributing
+Build and start containers:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+docker compose up -d --build
+```
 
-## Code of Conduct
+This starts:
+- **app** → Laravel + Apache + Supervisor  
+- **db** → MySQL 8  
+- **redis** → Redis for queues/cache  
+- **kafka & zookeeper** → Kafka event streaming  
+- **kafka-ui** → UI for managing topics (http://localhost:8080)  
+- **phpmyadmin** → DB management (http://localhost:8081)  
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+## 🗄️ 2. Database Setup
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Run migrations and seeders inside the container:
 
-## License
+```bash
+docker exec -it yara_app bash
+php artisan migrate --force
+php artisan db:seed --force
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This prepares all tables (users, orders, wallets, etc.) with initial seed data.
+
+---
+
+## 🔄 3. Supervisor & Services
+
+The container is already configured with **Supervisor** to run background workers:
+
+- Laravel Queue Worker
+- Kafka Consumer (wallet-events, order-events, etc.)
+- WebSocket server (for broadcasting real-time notifications)
+
+You can check logs:
+
+```bash
+docker logs -f yara_app
+```
+
+Or inside the container:
+
+```bash
+supervisorctl status
+```
+
+---
+
+## 📡 4. Kafka & Notifications Flow
+
+1. **Laravel Action**: User places an order / wallet is credited or debited.  
+2. **Kafka Producer**: A payload is published to `wallet-events` or `order-events`.  
+3. **Kafka Consumer**: Supervisor runs a `KafkaWalletConsumerCommand` that consumes messages.  
+4. **Laravel Notification**: Message is turned into a `WalletNotification` or `OrderNotification`.  
+5. **Broadcast via WebSocket**: Frontend clients receive the notification in real time.  
+
+---
+
+## 💻 5. Frontend — Connecting to WebSocket
+
+Example (using Laravel Echo + Pusher replacement):
+
+```javascript
+import Echo from "laravel-echo";
+
+window.Echo = new Echo({
+    broadcaster: "pusher",
+    key: "anyKey",
+    wsHost: window.location.hostname,
+    wsPort: 6001,
+    forceTLS: false,
+    disableStats: true,
+});
+
+window.Echo.private(`users.${userId}`)
+    .listen(".Illuminate\\Notifications\\Events\\BroadcastNotificationCreated", (notification) => {
+        console.log("📢 New Notification:", notification);
+    });
+```
+
+---
+
+## 🔍 6. Testing
+
+### Send Test Wallet Event
+Inside Laravel Tinker:
+
+```bash
+php artisan tinker
+```
+
+```php
+$user = \App\Models\User::first();
+
+KafkaService::publish('wallet-events', [
+    'type'      => 'debit',
+    'amount'    => 1000,
+    'balance'   => $user->wallet->balance - 1000,
+    'reference' => 'ORDER1234',
+    'remarks'   => 'Order payment',
+    'user_id'   => $user->id,
+]);
+```
+
+Check frontend → should receive real-time notification.  
+
+---
+
+## ✅ Summary
+
+- **Docker** builds and runs the full stack (App + Kafka + MySQL + Redis).  
+- **Migrations & Seeds** are run via Artisan.  
+- **Supervisor** runs WebSocket + Kafka consumers automatically.  
+- **Kafka Events** flow into Laravel Notifications → Broadcast to WebSocket → Frontend receives instantly.  
+
+---
+
+# 🚀 With JaraMarket
+We’re not just delivering ingredients.  
+We’re delivering **ease, comfort, and peace of mind**.  

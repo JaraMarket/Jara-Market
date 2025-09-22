@@ -60,7 +60,10 @@
                                 <tr>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Transaction ID</th>
+                                        #ID</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Reference </th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         User</th>
@@ -76,30 +79,31 @@
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Date</th>
-                                    <th
-                                        class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Actions</th>
+                                    
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @forelse($payments as $payment)
                                     <tr>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            {{ $payment->transaction_id }}
+                                            {{ $payment->id }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            {{ $payment->txn_ref }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {{ $payment->user->name }}
+                                            {{ $payment->user?->name }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {{ number_format($payment->amount, 2) }} {{ $payment->currency }}
+                                            {{ number_format($payment->amount, 2) }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {{ ucfirst($payment->payment_method) }}
+                                            {{ ucfirst($payment->transaction_mode) }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <span
                                                 class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                                {{ $payment->status === 'completed'
+                                                {{ $payment->status === 'success'
                                                     ? 'bg-green-100 text-green-800'
                                                     : ($payment->status === 'pending'
                                                         ? 'bg-yellow-100 text-yellow-800'
@@ -108,12 +112,9 @@
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {{ $payment->payment_date->format('M d, Y H:i') }}
+                                            {{ $payment->created_at->format('M d, Y H:i') }}
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <a href="{{ route('payments.show', $payment) }}"
-                                                class="text-green-600 hover:text-green-900">View Details</a>
-                                        </td>
+                                        
                                     </tr>
                                 @empty
                                     <tr>

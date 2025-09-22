@@ -2,7 +2,16 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\Config;
+use App\Models\Setting;
+use Schema;
+use App\Enums\Sms\SmsGatewayEnum;
+use App\Services\SmsGateways\Termii;
+use App\Contracts\SmsGatewayInterface;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
+use App\Contracts\PaymentGatewayInterface;
+use App\Services\PaymentGateways\Paystack;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -11,7 +20,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(PaymentGatewayInterface::class, Paystack::class);
+        $this->app->singleton(SmsGatewayInterface::class, function ($app) {
+            $smsGateway = config('app.sms_gateway');
+            if ($smsGateway === SmsGatewayEnum::TERMII()) {
+                return new Termii();
+            }
+        });
     }
 
     /**
@@ -19,6 +34,21 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Schema::defaultStringLength(191);
+
+        Password::defaults(function () {
+            return Password::min(8)->letters()->mixedCase()->numbers()->symbols()->uncompromised();
+        });
+
+        if (Schema::hasTable('settings')) {
+            $dbTimezone = Setting::where('key', 'timezone')->value('value');
+        }
+    
+        // Fallback to config/app.php if DB value is missing
+        $timezone = $dbTimezone ?? config('app.timezone');
+    
+        // Apply globally
+        Config::set('app.timezone', $timezone);
+        date_default_timezone_set($timezone);
     }
 }

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Wallet;
+use App\Enums\UserPermissionsEnum;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -31,14 +33,17 @@ class AdminController extends Controller
             'password' => ['required', Password::defaults()],
         ]);
 
-        $admin = User::create([
+        $user = User::create([
             'firstname' => $validated['firstname'],
             'lastname' => $validated['lastname'],
             'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'role' => 'admin',
+            'password' => $validated['password'],
+            'role' => UserPermissionsEnum::ADMIN(),
+            'is_active' => true,
             'referral_code' => Str::random(10),
         ]);
+
+        Wallet::create(['user_id' => $user->id]);
 
         return redirect()->route('admin.index')
             ->with('success', 'Admin created successfully');
@@ -68,7 +73,7 @@ class AdminController extends Controller
         $admin->email = $validated['email'];
 
         if (!empty($validated['password'])) {
-            $admin->password = Hash::make($validated['password']);
+            $admin->password = $validated['password'];
         }
 
         $admin->save();
@@ -115,7 +120,7 @@ class AdminController extends Controller
             if (!Hash::check($validated['current_password'], $admin->password)) {
                 return back()->withErrors(['current_password' => 'The current password is incorrect.']);
             }
-            $admin->password = Hash::make($validated['new_password']);
+            $admin->password = $validated['new_password'];
         }
 
         $admin->firstname = $validated['firstname'];

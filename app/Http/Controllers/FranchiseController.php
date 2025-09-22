@@ -2,26 +2,63 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Franchise;
+use App\Models\User;
 use Illuminate\Http\Request;
-use App\Models\Franchise; // Assuming you have a Franchise model
 
-/**
- * @OA\Info(title="JaraMarket API", version="1.0")
- * @OA\Server(url="http://localhost:8000")
- * @OA\PathItem(
- *     path="/orders",
- *     description="Operations related to orders"
- * )
- */
 class FranchiseController extends Controller
 {
-    /**
-     * Display a listing of the franchises.
-     */
     public function index()
     {
-        $franchises = Franchise::all(); // Retrieve all franchise records
+        $franchises = Franchise::with('owner')->latest()->paginate(10);
+        return view('franchises.index', compact('franchises'));
+    }
 
-        return response()->json($franchises, 200);
+    public function create()
+    {
+        $users = User::all();
+        return view('franchises.create', compact('users'));
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name'     => ['required', 'string', 'max:255'],
+            'location' => ['required', 'string', 'max:255'],
+            'owner_id' => ['required', 'exists:users,id'],
+        ]);
+
+        Franchise::create($validated);
+
+        return redirect()->route('franchises.index')
+            ->with('success', 'Franchise created successfully');
+    }
+
+    public function edit(Franchise $franchise)
+    {
+        $users = User::all();
+        return view('franchises.edit', compact('franchise', 'users'));
+    }
+
+    public function update(Request $request, Franchise $franchise)
+    {
+        $validated = $request->validate([
+            'name'     => ['required', 'string', 'max:255'],
+            'location' => ['required', 'string', 'max:255'],
+            'owner_id' => ['required', 'exists:users,id'],
+        ]);
+
+        $franchise->update($validated);
+
+        return redirect()->route('franchises.index')
+            ->with('success', 'Franchise updated successfully');
+    }
+
+    public function destroy(Franchise $franchise)
+    {
+        $franchise->delete();
+
+        return redirect()->route('franchises.index')
+            ->with('success', 'Franchise deleted successfully');
     }
 }

@@ -44,8 +44,6 @@ class CartController extends Controller
             'quantity' => 'required|integer|min:1'
         ]);
 
-        
-
         $user = Auth::user();
         
         // Get or create cart for the user

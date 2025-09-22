@@ -17,75 +17,69 @@
                 </div>
             </div>
 
-            <!-- Success Message -->
-            @if (session('success'))
-                <div class="rounded-md bg-green-50 p-4 mb-6">
-                    <div class="flex">
-                        <div class="flex-shrink-0">
-                            <svg class="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-                                fill="currentColor">
-                                <path fill-rule="evenodd"
-                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                    clip-rule="evenodd" />
-                            </svg>
-                        </div>
-                        <div class="ml-3">
-                            <p class="text-sm font-medium text-green-800">
-                                {{ session('success') }}
-                            </p>
-                        </div>
-                        <div class="ml-auto pl-3">
-                            <div class="-mx-1.5 -my-1.5">
-                                <button type="button" onclick="this.parentElement.parentElement.parentElement.remove()"
-                                    class="inline-flex bg-green-50 rounded-md p-1.5 text-green-500 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                                    <span class="sr-only">Dismiss</span>
-                                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-                                        fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            @endif
-
             <!-- Settings Tabs -->
-            <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div class="bg-white shadow overflow-hidden sm:rounded-lg"
+                 x-data="{
+                    activeTab: localStorage.getItem('settingsTab') || 'general',
+                    setTab(tab) {
+                        this.activeTab = tab;
+                        localStorage.setItem('settingsTab', tab);
+                    }
+                 }">
+
+                <!-- Tabs -->
                 <div class="border-b border-gray-200">
-                    <nav class="-mb-px flex space-x-8 overflow-x-auto" aria-label="Tabs" x-data="{ activeTab: 'general' }">
-                        <button @click="activeTab = 'general'"
-                            :class="{ 'border-green-500 text-green-600': activeTab === 'general', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'general' }"
+                    <nav class="-mb-px flex space-x-8 overflow-x-auto" aria-label="Tabs">
+                        <button @click="setTab('general')"
+                            :class="activeTab === 'general'
+                                ? 'border-green-500 text-green-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
                             class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
                             General
                         </button>
-                        <button @click="activeTab = 'contact'"
-                            :class="{ 'border-green-500 text-green-600': activeTab === 'contact', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'contact' }"
+                        <button @click="setTab('contact')"
+                            :class="activeTab === 'contact'
+                                ? 'border-green-500 text-green-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
                             class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
                             Contact Information
                         </button>
-                        <button @click="activeTab = 'payment'"
-                            :class="{ 'border-green-500 text-green-600': activeTab === 'payment', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'payment' }"
+                        <button @click="setTab('payment')"
+                            :class="activeTab === 'payment'
+                                ? 'border-green-500 text-green-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
                             class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
                             Payment & Shipping
                         </button>
-                        <button @click="activeTab = 'social'"
-                            :class="{ 'border-green-500 text-green-600': activeTab === 'social', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'social' }"
+                        <button @click="setTab('social')"
+                            :class="activeTab === 'social'
+                                ? 'border-green-500 text-green-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
                             class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
                             Social Media
+                        </button>
+                        <button @click="setTab('commission')"
+                            :class="activeTab === 'commission'
+                                ? 'border-green-500 text-green-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                            class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                            Commissions & Bonus
                         </button>
                     </nav>
                 </div>
 
+                <!-- Form -->
                 <form action="{{ route('settings.update') }}" method="POST" class="divide-y divide-gray-200">
                     @csrf
 
                     <!-- General Settings -->
-                    <div x-show="activeTab === 'general'" class="px-4 py-5 sm:p-6">
+                    <div x-show="activeTab === 'general'" x-cloak x-transition class="px-4 py-5 sm:p-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">General Settings</h3>
+                        <!-- Your general inputs here -->
+
+
                         <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-                            <div class="sm:col-span-4">
+                            <div class="sm:col-span-6">
                                 <label for="site_name" class="block text-sm font-medium text-gray-700">
                                     Site Name <span class="text-red-500">*</span>
                                 </label>
@@ -95,6 +89,60 @@
                                         class="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md @error('site_name') border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500 @enderror">
                                 </div>
                                 @error('site_name')
+                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div class="sm:col-span-3">
+                                <label for="company_logo" class="block text-sm font-medium text-gray-700">
+                                    Company Logo
+                                </label>
+
+                                <div class="mt-2 flex items-center">
+                                    @php
+                                        $logoUrl = $settings['company_logo'] ?? null;
+                                    @endphp
+
+                                    <span class="inline-block h-16 w-16 rounded-full overflow-hidden bg-gray-100">
+                                        <img id="logoPreview"
+                                            src="{{ $logoUrl ? get_media_url($logoUrl) : 'https://via.placeholder.com/64?text=+' }}"
+                                            alt="Logo Preview"
+                                            class="h-full w-full object-cover">
+                                    </span>
+
+                                    <input id="company_logo" name="company_logo" type="file"
+                                        class="ml-5 rounded-md border-gray-300 text-sm shadow-sm focus:border-green-500 focus:ring-green-500"
+                                        onchange="previewLogo(event)">
+                                </div>
+
+                                @error('company_logo')
+                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div class="sm:col-span-3">
+                                <label for="favicon_logo" class="block text-sm font-medium text-gray-700">
+                                    Favicon Logo
+                                </label>
+
+                                <div class="mt-2 flex items-center">
+                                    @php
+                                        $favUrl = $settings['favicon_logo'] ?? null;
+                                    @endphp
+
+                                    <span class="inline-block h-16 w-16 rounded-full overflow-hidden bg-gray-100">
+                                        <img id="favPreview"
+                                            src="{{ $favUrl ? get_media_url($favUrl) : 'https://via.placeholder.com/64?text=+' }}"
+                                            alt="Favicon Preview"
+                                            class="h-full w-full object-cover">
+                                    </span>
+
+                                    <input id="favicon_logo" name="favicon_logo" type="file"
+                                        class="ml-5 rounded-md border-gray-300 text-sm shadow-sm focus:border-green-500 focus:ring-green-500"
+                                        onchange="previewFav(event)">
+                                </div>
+
+                                @error('favicon_logo')
                                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
@@ -129,6 +177,7 @@
                                                 'America/Los_Angeles' => 'Pacific Time (US & Canada)',
                                                 'Europe/London' => 'London',
                                                 'Europe/Paris' => 'Paris',
+                                                'Africa/Lagos' => 'West Africa Time (Nigeria)',
                                                 'Asia/Tokyo' => 'Tokyo',
                                                 'Asia/Shanghai' => 'Shanghai',
                                                 'Australia/Sydney' => 'Sydney',
@@ -177,12 +226,16 @@
                                 @enderror
                             </div>
                         </div>
+
+
                     </div>
 
                     <!-- Contact Information -->
-                    <div x-show="activeTab === 'contact'" class="px-4 py-5 sm:p-6">
+                    <div x-show="activeTab === 'contact'" x-cloak x-transition class="px-4 py-5 sm:p-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Contact Information</h3>
+                        <!-- Your contact inputs here -->
                         <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-                            <div class="sm:col-span-4">
+                            <div class="sm:col-span-3">
                                 <label for="contact_email" class="block text-sm font-medium text-gray-700">
                                     Contact Email <span class="text-red-500">*</span>
                                 </label>
@@ -197,9 +250,9 @@
                                 @enderror
                             </div>
 
-                            <div class="sm:col-span-4">
+                            <div class="sm:col-span-3">
                                 <label for="contact_phone" class="block text-sm font-medium text-gray-700">
-                                    Contact Phone
+                                    Contact Phone Number
                                 </label>
                                 <div class="mt-1">
                                     <input type="text" name="contact_phone" id="contact_phone"
@@ -207,6 +260,20 @@
                                         class="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md @error('contact_phone') border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500 @enderror">
                                 </div>
                                 @error('contact_phone')
+                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div class="sm:col-span-6">
+                                <label for="support_email" class="block text-sm font-medium text-gray-700">
+                                    Support Email
+                                </label>
+                                <div class="mt-1">
+                                    <input type="email" name="support_email" id="support_email"
+                                        value="{{ old('support_email', $settings['support_email'] ?? 'support@example.com') }}"
+                                        class="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md @error('support_email') border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500 @enderror">
+                                </div>
+                                @error('support_email')
                                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
@@ -224,24 +291,15 @@
                                 @enderror
                             </div>
 
-                            <div class="sm:col-span-4">
-                                <label for="support_email" class="block text-sm font-medium text-gray-700">
-                                    Support Email
-                                </label>
-                                <div class="mt-1">
-                                    <input type="email" name="support_email" id="support_email"
-                                        value="{{ old('support_email', $settings['support_email'] ?? 'support@example.com') }}"
-                                        class="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md @error('support_email') border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500 @enderror">
-                                </div>
-                                @error('support_email')
-                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
+                            
                         </div>
                     </div>
 
                     <!-- Payment & Shipping -->
-                    <div x-show="activeTab === 'payment'" class="px-4 py-5 sm:p-6">
+                    <div x-show="activeTab === 'payment'" x-cloak x-transition class="px-4 py-5 sm:p-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Payment & Shipping</h3>
+                        <!-- Your payment inputs here -->
+
                         <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                             <div class="sm:col-span-2">
                                 <label for="currency" class="block text-sm font-medium text-gray-700">
@@ -252,14 +310,15 @@
                                         class="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md">
                                         @php
                                             $currencies = [
-                                                'USD' => 'US Dollar ($)',
-                                                'EUR' => 'Euro (€)',
-                                                'GBP' => 'British Pound (£)',
-                                                'JPY' => 'Japanese Yen (¥)',
-                                                'CAD' => 'Canadian Dollar (C$)',
-                                                'AUD' => 'Australian Dollar (A$)',
-                                                'INR' => 'Indian Rupee (₹)',
-                                                'CNY' => 'Chinese Yuan (¥)',
+                                                '₦' => 'Nigerian Naira (₦)',
+                                                '$' => 'US Dollar ($)',
+                                                '€' => 'Euro (€)',
+                                                '£' => 'British Pound (£)',
+                                                '¥' => 'Japanese Yen (¥)',
+                                                'C$' => 'Canadian Dollar (C$)',
+                                                'A$' => 'Australian Dollar (A$)',
+                                                '₹' => 'Indian Rupee (₹)',
+                                                '¥' => 'Chinese Yuan (¥)',
                                             ];
                                         @endphp
                                         @foreach ($currencies as $value => $label)
@@ -296,7 +355,7 @@
                                 </label>
                                 <div class="mt-1 relative rounded-md shadow-sm">
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <span class="text-gray-500 sm:text-sm">$</span>
+                                        <span class="text-gray-500 sm:text-sm">{{$settings['currency']}}</span>
                                     </div>
                                     <input type="number" name="shipping_fee" id="shipping_fee"
                                         value="{{ old('shipping_fee', $settings['shipping_fee'] ?? '5.99') }}"
@@ -315,6 +374,7 @@
                                 <div class="mt-2 space-y-2">
                                     @php
                                         $paymentMethods = [
+                                            'wallet' => 'Wallet Payment',
                                             'credit_card' => 'Credit Card',
                                             'paypal' => 'PayPal',
                                             'bank_transfer' => 'Bank Transfer',
@@ -365,9 +425,11 @@
                     </div>
 
                     <!-- Social Media -->
-                    <div x-show="activeTab === 'social'" class="px-4 py-5 sm:p-6">
+                    <div x-show="activeTab === 'social'" x-cloak x-transition class="px-4 py-5 sm:p-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Social Media</h3>
+                        <!-- Your social inputs here -->
                         <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-                            <div class="sm:col-span-4">
+                            <div class="sm:col-span-3">
                                 <label for="social_facebook" class="block text-sm font-medium text-gray-700">
                                     Facebook URL
                                 </label>
@@ -381,7 +443,7 @@
                                 @enderror
                             </div>
 
-                            <div class="sm:col-span-4">
+                            <div class="sm:col-span-3">
                                 <label for="social_twitter" class="block text-sm font-medium text-gray-700">
                                     Twitter URL
                                 </label>
@@ -395,7 +457,7 @@
                                 @enderror
                             </div>
 
-                            <div class="sm:col-span-4">
+                            <div class="sm:col-span-2">
                                 <label for="social_instagram" class="block text-sm font-medium text-gray-700">
                                     Instagram URL
                                 </label>
@@ -409,7 +471,7 @@
                                 @enderror
                             </div>
 
-                            <div class="sm:col-span-4">
+                            <div class="sm:col-span-2">
                                 <label for="social_youtube" class="block text-sm font-medium text-gray-700">
                                     YouTube URL
                                 </label>
@@ -423,7 +485,7 @@
                                 @enderror
                             </div>
 
-                            <div class="sm:col-span-4">
+                            <div class="sm:col-span-2">
                                 <label for="social_tiktok" class="block text-sm font-medium text-gray-700">
                                     TikTok URL
                                 </label>
@@ -439,10 +501,62 @@
                         </div>
                     </div>
 
-                    <!-- Form Actions -->
+                     <!-- Social Media -->
+                     <div x-show="activeTab === 'commission'" x-cloak x-transition class="px-4 py-5 sm:p-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Commission</h3>
+                        <!-- Your social inputs here -->
+                        <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                            <div class="sm:col-span-3">
+                                <label for="amount_dont_charge" class="block text-sm font-medium text-gray-700">
+                                    Minimum Order Amount
+                                </label>
+                                <div class="mt-1">
+                                    <input type="text" name="minimum_order_amount" id="minimum_order_amount"
+                                        value="{{ old('minimum_order_amount', $settings['minimum_order_amount'] ?? '20000') }}"
+                                        class="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md @error('minimum_order_amount') border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500 @enderror">
+                                </div>
+                                @error('minimum_order_amount')
+                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div class="sm:col-span-3">
+                                <label for="first_order_bonus" class="block text-sm font-medium text-gray-700">
+                                First Order Referral Bonus (%)
+                                </label>
+                                <div class="mt-1">
+                                    <input type="text" name="first_order_bonus" id="first_order_bonus"
+                                        value="{{ old('first_order_bonus', $settings['first_order_bonus'] ?? '20') }}"
+                                        class="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md @error('first_order_bonus') border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500 @enderror">
+                                </div>
+                                @error('first_order_bonus')
+                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div class="sm:col-span-2">
+                                <label for="repeat_order_bonus" class="block text-sm font-medium text-gray-700">
+                                Repeat Order Referral Bonus (%)
+                                </label>
+                                <div class="mt-1">
+                                    <input type="text" name="repeat_order_bonus" id="repeat_order_bonus"
+                                        value="{{ old('repeat_order_bonus', $settings['repeat_order_bonus'] ?? '10') }}"
+                                        class="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md @error('repeat_order_bonus') border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500 @enderror">
+                                </div>
+                                @error('repeat_order_bonus')
+                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- Save Button -->
                     <div class="px-4 py-3 bg-gray-50 text-right sm:px-6">
                         <button type="submit"
-                            class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                            class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm 
+                                   text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 
+                                   focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                             Save Settings
                         </button>
                     </div>
@@ -451,24 +565,10 @@
         </div>
     </div>
 @endsection
-
-@push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Auto-hide success message after 5 seconds
-            setTimeout(function() {
-                const successAlert = document.querySelector('.bg-green-50');
-                if (successAlert) {
-                    successAlert.remove();
-                }
-            }, 5000);
-
-            // Form validation
-            const form = document.querySelector('form');
-            form.addEventListener('submit', function(event) {
-                // Additional client-side validation can be added here
-            });
-        });
-    </script>
+@push('styles')
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
 @endpush

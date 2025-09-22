@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\Sms\SmsGatewayEnum;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\ServiceProvider;
 
@@ -17,6 +18,7 @@ return [
     */
 
     'name' => env('APP_NAME', 'Laravel'),
+    
     'referral_bonus' => 10,
 
     /*
@@ -60,6 +62,28 @@ return [
 
     'asset_url' => env('ASSET_URL'),
 
+    'payment-provider' => env('PAYMENT_PROVIDER', 'Paystack'),
+    'sms_gateway' => env('SMS_GATEWAY', SmsGatewayEnum::TERMII()),
+    'emergency_phone_number' => env('EMERGENCY_PHONE_NUMBER','+234'),
+    'email_url' => env('EMAL_URL','hi@yaramarket.com'),
+    'contact_address' => env('CONTACT_ADDRESS','11 IBB Way, Akwa Ibom State'),
+    'otp_expiry_time' => env('OTP_EXPIRY_TIME', '15'),
+
+    //paystack key
+    'paystack_url' => env('PAYSTACK_URL'),
+    'paystack_secret_key' => env('PAYSYACK_SECRET_KEY'),
+    'paystack_pub_key' => env('PAYSYACK_PUBLIC_KEY'),
+
+
+    //termii
+    'termii_base_url' => env('TERMII_BASE_URL', 'https://api.ng.termii.com/api/'),
+    'termii_api_key' => env('TERMII_API_KEY'),
+    'termii_sender_id' => env('TERMII_SENDER_ID', 'N-Alert'),
+
+    'flutterwave_url' => env('FLUTTERWAVE_URL', 'https://api.flutterwave.com/v3'),
+    'flutterwave_secret_key' => env('FLUTTERWAVE_SECRET_KEY'),
+    'flutterwave_public_key' => env('FLUTTERWAVE_PUBLIC_KEY'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone
@@ -71,7 +95,7 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => 'Africa/Lagos',
 
     /*
     |--------------------------------------------------------------------------
@@ -165,11 +189,14 @@ return [
          * Application Service Providers...
          */
         App\Providers\AppServiceProvider::class,
+        App\Providers\ActivityLogServiceProvider::class,
         App\Providers\AuthServiceProvider::class,
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         App\Providers\SwaggerUiServiceProvider::class,
+        App\Providers\MacroServiceProvider::class,
+        App\Providers\RepositoryServiceProvider::class,
 
     ])->toArray(),
 

@@ -20,6 +20,24 @@
                         @enderror
                     </div>
 
+                    <div class="col-span-6 sm:col-span-4">
+                        <label for="unit" class="block text-sm font-medium text-gray-700">Type</label>
+                        <select name="category_type_id" id="category_type_id" class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                           <option value="">select</option>
+                            @foreach($category_types as $row)
+                            <option value="{{$row->id}}">{{$row->name}}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="name" class="block text-sm font-medium text-gray-700">Sort Order</label>
+                        <input type="number" step="0.01" min="0" name="sort_by" id="sort_by" value="{{ old('sort_by') }}" class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                        @error('sort_by')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <div>
                         <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
                         <textarea name="description" id="description" rows="3"

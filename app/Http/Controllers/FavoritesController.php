@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
 use App\Models\Favorite;
-use App\Models\Product;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\FavoriteRequest;
+use App\Http\Resources\FavoriteResource;
 
 class FavoritesController extends Controller
 {
@@ -13,45 +14,48 @@ class FavoritesController extends Controller
     {
         $user = Auth::user();
         $favorites = Favorite::where('user_id', $user->id)
-            ->with('product')
             ->get();
             
         return response()->json([
-            'status' => 'success',
-            'data' => $favorites
+            'status' => true,
+            'message' => "Favorites retrieved successfully",
+            'data' => FavoriteResource::collection($favorites)
         ]);
     }
 
-    public function store(Request $request)
+    public function store(FavoriteRequest $request)
     {
-        $request->validate([
-            'product_id' => 'required|exists:products,id'
-        ]);
-
-        $user = Auth::user();
-        
-        // Check if already favorited
-        $existingFavorite = Favorite::where('user_id', $user->id)
-            ->where('product_id', $request->product_id)
-            ->first();
-
-        if ($existingFavorite) {
+        try {
+            $user = Auth::user();
+            // Check if already favorited
+            $exists = Favorite::where('user_id', $user->id)
+                ->where('product_id', $request->product_id)
+                ->exists();
+    
+            if ($exists) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Product already in favorites'
+                ], 400);
+            }
+    
+            $favorite = Favorite::create([
+                'user_id' => $user->id,
+                'product_id' => $request->product_id,
+            ]);
+    
             return response()->json([
-                'status' => 'error',
-                'message' => 'Product already in favorites'
-            ], 400);
+                'status' => true,
+                'message' => 'Product added to favorites',
+                'data' => new FavoriteResource($favorite)
+            ], 201);
+    
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage(),
+            ], 500);
         }
-
-        $favorite = Favorite::create([
-            'user_id' => $user->id,
-            'product_id' => $request->product_id
-        ]);
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Product added to favorites',
-            'data' => $favorite
-        ], 201);
     }
 
     public function destroy($id)
@@ -63,7 +67,7 @@ class FavoritesController extends Controller
 
         if (!$favorite) {
             return response()->json([
-                'status' => 'error',
+                'status' => false,
                 'message' => 'Favorite not found'
             ], 404);
         }
@@ -71,7 +75,7 @@ class FavoritesController extends Controller
         $favorite->delete();
 
         return response()->json([
-            'status' => 'success',
+            'status' => true,
             'message' => 'Favorite removed successfully'
         ]);
     }

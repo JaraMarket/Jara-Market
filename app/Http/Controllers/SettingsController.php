@@ -2,87 +2,64 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Setting;
+use Illuminate\Http\Request;
 
-/**
- * @OA\Info(title="JaraMarket API", version="1.0")
- * @OA\Server(url="http://localhost:8000")
- * @OA\Tag(
- *     name="Settings",
- *     description="API Endpoints for managing application settings"
- * )
- */
 class SettingsController extends Controller
 {
-    /**
-     * @OA\Get(
-     *     path="/api/settings",
-     *     summary="Get all application settings",
-     *     description="Retrieves all application settings as key-value pairs",
-     *     operationId="getSettings",
-     *     tags={"Settings"},
-     *     @OA\Response(
-     *         response=200,
-     *         description="Successful operation",
-     *         @OA\JsonContent(
-     *             type="object",
-     *             additionalProperties={
-     *                 "type": "string",
-     *                 "example": "value"
-     *             }
-     *         )
-     *     )
-     * )
-     */
     public function index()
     {
-        return Setting::pluck('value', 'key');
+        $settings = Setting::all()->pluck('value', 'key');
+        return view('settings.index', compact('settings'));
     }
 
-    /**
-     * @OA\Post(
-     *     path="/api/settings",
-     *     summary="Update application settings",
-     *     description="Updates multiple application settings with key-value pairs",
-     *     operationId="updateSettings",
-     *     tags={"Settings"},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         description="Key-value pairs of settings to update",
-     *         @OA\JsonContent(
-     *             type="object",
-     *             additionalProperties={
-     *                 "type": "string",
-     *                 "example": "value"
-     *             },
-     *             example={
-     *                 "site_name": "JaraMarket",
-     *                 "contact_email": "support@jaramarket.com",
-     *                 "maintenance_mode": "false"
-     *             }
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Settings updated successfully",
-     *         @OA\JsonContent(
-     *             type="object",
-     *             @OA\Property(property="message", type="string", example="Settings saved successfully")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=422,
-     *         description="Validation error"
-     *     )
-     * )
-     */
-    public function store(Request $request)
+    public function update(Request $request)
     {
-        foreach ($request->all() as $key => $value) {
-            Setting::updateOrCreate(['key' => $key], ['value' => $value]);
+        $validated = $request->validate([
+            'site_name'         => ['required', 'string', 'max:255'],
+            'site_description'  => ['nullable', 'string'],
+            'contact_email'     => ['required', 'email'],
+            'contact_phone'     => ['nullable', 'string'],
+            'support_email'     => ['nullable', 'string'],
+            'address'           => ['nullable', 'string'],
+            'currency'          => ['required', 'string'],
+            'tax_rate'          => ['required', 'numeric', 'min:0', 'max:100'],
+            'shipping_fee'      => ['required', 'numeric', 'min:0'],
+            'social_facebook'   => ['nullable', 'url'],
+            'social_twitter'    => ['nullable', 'url'],
+            'social_instagram'  => ['nullable', 'url'],
+            'social_youtube'    => ['nullable', 'url'],
+            'social_tiktok'     => ['nullable', 'url'],
+            'payment_methods'   => ['nullable','array'],
+            'order_statuses'    => ['nullable'],
+            'minimum_order_amount' => ['nullable', 'numeric'],
+            'first_order_bonus'    => ['nullable', 'numeric'],
+            'repeat_order_bonus'   => ['nullable', 'numeric'],
+            'timezone'             => ['nullable', 'timezone'],
+            'company_logo'   => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:1024'],
+            'favicon_logo'   => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:1024'],
+        ]);
+      
+        if ($request->hasFile('company_logo')) {
+            $validated['company_logo'] = upload_image("logo", $request->company_logo);
         }
 
-        return response()->json(['message' => 'Settings saved successfully']);
+        if ($request->hasFile('favicon_logo')) {
+            $validated['favicon_logo'] = upload_image("logo", $request->favicon_logo);
+        }
+      
+        if (isset($validated['payment_methods'])) {
+            $validated['payment_methods'] = implode(',', $validated['payment_methods']);
+        }
+
+        foreach ($validated as $key => $value) {
+            Setting::updateOrCreate(
+                ['key' => $key],
+                ['value' => $value]
+            );
+        }
+
+        return redirect()->back()
+            ->with('success', 'Settings saved successfully');
     }
 }

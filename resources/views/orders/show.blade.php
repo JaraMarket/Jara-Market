@@ -19,7 +19,7 @@
         <div class="bg-white shadow overflow-hidden sm:rounded-lg mb-5">
             <div class="px-4 py-5 sm:px-6 flex justify-between">
                 <div>
-                    <h3 class="text-lg leading-6 font-medium text-gray-900">Order #{{ $order->id }}</h3>
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">Order #{{ $order->reference }}</h3>
                     <p class="mt-1 max-w-2xl text-sm text-gray-500">{{ $order->created_at->format('F d, Y h:i A') }}</p>
                 </div>
                 <div>
@@ -33,9 +33,14 @@
                                 <span class="ml-2 text-sm text-gray-700">Pending</span>
                             </label>
                             <label class="inline-flex items-center">
-                                <input type="radio" name="status" value="in_progress" {{ $order->status === 'in_progress' ? 'checked' : '' }}
+                                <input type="radio" name="status" value="in_progress" {{ $order->status === 'processing' ? 'checked' : '' }}
                                     class="form-radio h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
                                 <span class="ml-2 text-sm text-gray-700">In Progress</span>
+                            </label>
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="status" value="cancelled" {{ $order->status === 'cancelled' ? 'checked' : '' }}
+                                    class="form-radio h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
+                                <span class="ml-2 text-sm text-gray-700">Cancelled</span>
                             </label>
                             <label class="inline-flex items-center">
                                 <input type="radio" name="status" value="completed" {{ $order->status === 'completed' ? 'checked' : '' }}
@@ -45,7 +50,7 @@
                         </div>
                         <button type="submit"
                             class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            Update Status
+                            Mark as Completed
                         </button>
                     </form>
                 </div>
@@ -57,19 +62,15 @@
                         <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ $order->user->name }}</dd>
                     </div>
                     <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                        <dt class="text-sm font-medium text-gray-500">Email Address</dt>
-                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ $order->user->email }}</dd>
+                        <dt class="text-sm font-medium text-gray-500">Phone Number</dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ $order->user->phone_number }}</dd>
                     </div>
                     <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                         <dt class="text-sm font-medium text-gray-500">Total Amount</dt>
                         <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">₦{{ number_format($order->total, 2) }}
                         </dd>
                     </div>
-                    <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                        <dt class="text-sm font-medium text-gray-500">Shipping Fee</dt>
-                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                            ₦{{ number_format($order->shipping_fee, 2) }}</dd>
-                    </div>
+                    
                 </dl>
             </div>
         </div>
@@ -85,44 +86,48 @@
                     <thead class="bg-gray-50">
                         <tr>
                             <th scope="col"
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Product</th>
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product/Ingredient</th>
                             <th scope="col"
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price
-                            </th>
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
                             <th scope="col"
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Quantity</th>
-                            <th scope="col"
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Subtotal</th>
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price (₦)</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal (₦)</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendor</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Accepted</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        @php
-                            \Log::info('Order items:', ['items' => $order->items->toArray()]);
-                        @endphp
                         @foreach ($order->items as $item)
-                            @php
-                                \Log::info('Order item:', ['item' => $item->toArray(), 'product' => $item->product ? $item->product->toArray() : null]);
-                            @endphp
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
                                         <div class="flex-shrink-0 h-10 w-10">
-                                            <img class="h-10 w-10 rounded-full" src="https://via.placeholder.com/150"
-                                                alt="Product image">
+                                                <img class="h-10 w-10 rounded-full" 
+                                                    src="{{ $item->product && $item->product->image_url 
+                                                            ? get_media_url($item->product->image_url) 
+                                                            : $item->product?->image_url }}"
+                                                    alt="{{ $item->product?->name ?? 'Product image' }}">
                                         </div>
                                         <div class="ml-4">
-                                            <div class="text-sm font-medium text-gray-900">{{ $item->product->name }}</div>
+                                            <div class="text-sm font-medium text-gray-900">{{ $item->product->name ?? $item->ingredient->name }}</div>
                                         </div>
                                     </div>
                                 </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ number_format($item->quantity) }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ number_format($item->price, 2) }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ number_format($item->price * $item->quantity, 2) }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $item->vendor?->firstname ?? ''  }} - {{$item?->vendor?->business_name ?? ''}}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $item->vendor_at ?? ''  }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    ₦{{ number_format($item->price, 2) }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $item->quantity }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    ₦{{ number_format($item->price * $item->quantity, 2) }}</td>
+
+                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                        {{ $item->status === 'pending' || $item->status === 'processing' ? 'bg-yellow-100 text-yellow-800' : 
+                                           ($item->status === 'completed' ? 'bg-green-100 text-green-800' : 
+                                           'bg-red-100 text-red-800') }}">
+                                        {{ ucfirst($order->status) }}
+                                    </span>
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -145,6 +150,7 @@
                             <td class="px-6 py-3 whitespace-nowrap text-sm font-semibold text-gray-900">
                                 ₦{{ number_format($order->total, 2) }}</td>
                         </tr>
+                        
                     </tfoot>
                 </table>
             </div>

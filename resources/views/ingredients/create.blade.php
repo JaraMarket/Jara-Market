@@ -35,17 +35,23 @@
             </div>
 
             <div class="col-span-6 sm:col-span-4">
+                <label for="category_id" class="block text-sm font-medium text-gray-700">Category</label>
+                    <select name="category_id" id="category_id" class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                           <option value="">select</option>
+                            @foreach($categories as $row)
+                                <option value="{{$row->id}}">{{$row->name}}</option>
+                            @endforeach
+                    </select>
+            </div>
+
+            <div class="col-span-6 sm:col-span-4">
                 <label for="unit" class="block text-sm font-medium text-gray-700">Unit</label>
-                <select name="unit" id="unit" class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-                    <option value="piece">Piece</option>
-                    <option value="kg">Kilogram</option>
-                    <option value="g">Gram</option>
-                    <option value="l">Liter</option>
-                    <option value="ml">Milliliter</option>
-                    <option value="cup">Cup</option>
-                    <option value="tbsp">Tablespoon</option>
-                    <option value="tsp">Teaspoon</option>
-                </select>
+                    <select name="unit" id="unit" class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                           <option value="">select</option>
+                            @foreach($units as $row)
+                                <option value="{{$row->code}}">{{$row->name}}</option>
+                            @endforeach
+                    </select>
             </div>
 
             <div class="col-span-6 sm:col-span-4">

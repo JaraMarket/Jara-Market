@@ -18,13 +18,24 @@ class Ingredient extends Model
         'discounted_price',
         'unit',
         'stock',
-        'image_url'
+        'image_url',
+        'category_id'
     ];
 
     public function products()
     {
-        return $this->belongsToMany(Product::class)
+        return $this->belongsToMany(Product::class, 'ingredient_product', 'product_id', 'ingredient_id')
             ->withPivot('quantity', 'unit')
             ->withTimestamps();
+    }
+
+    public function uom()
+    {
+        return $this->belongsTo(Uom::class, 'unit', 'code');
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
     }
 }

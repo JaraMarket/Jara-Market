@@ -2,21 +2,25 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Traits\AddPipelineToModelTrait;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Product extends Model
 {
-    use HasFactory;
+    use HasFactory, AddPipelineToModelTrait;
+
+    protected $hidden = ['pivot'];
 
     protected $fillable = [
         'name',
         'description',
-        'image',
-        'category_id',
-        'vendor_id',
+        'image_url',
+        'discount_price',
         'price',
         'preparation_steps',
+        'rating',
+        'stock'
     ];
 
     public function categories()
