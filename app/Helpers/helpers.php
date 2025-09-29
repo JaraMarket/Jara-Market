@@ -9,23 +9,35 @@ function upload_image(string $folder, $image_file, ?string $old_file = null): ?s
         return null;
     }
 
-    $filename = time() . '_' . preg_replace('/\s+/', '_', $image_file->getClientOriginalName());
-
-    // Determine environment
+    // Use environment-based disk (s3 in production, public otherwise)
     $disk = app()->environment('production') ? 's3' : 'public';
 
-    // Delete old file if exists
-    if ($old_file && Storage::disk($disk)->exists($old_file)) {
-        Storage::disk($disk)->delete($old_file);
-    }
-
-     // Unique filename
+    // Build safe unique filename
     $filename = time() . '_' . preg_replace('/\s+/', '_', $image_file->getClientOriginalName());
 
-    $path = $image_file->storeAs($folder, $filename, $disk);
+    try {
+        // Delete old file if exists
+        if ($old_file && Storage::disk($disk)->exists($old_file)) {
+            Storage::disk($disk)->delete($old_file);
+        }
 
-    return $path;
+        // Upload to the correct disk
+        $path = $image_file->storeAs($folder, $filename, $disk);
+        
+        return $path; // e.g., logo/169598xxxx_logo.png
+
+    } catch (\Exception $e) {
+        // If something goes wrong (S3 misconfig, permissions, etc.), log it
+        \Log::error('Image upload failed', [
+            'disk' => $disk,
+            'file' => $filename,
+            'error' => $e->getMessage(),
+        ]);
+
+        return null;
+    }
 }
+
 
 function delete_image($path)
 {
@@ -35,24 +47,40 @@ function delete_image($path)
     }
     return false;
 }
-if (!function_exists('get_media_url')) {
-    /**
-     * Resolve media URL with environment-aware fallback (S3 → Local → Null).
-     *
-     * @param string|null $path
-     * @return string|null
-     */
-    function get_media_url(?string $path): ?string
-    {
-        if (!$path) {
+function get_media_url(?string $path): ?string
+{
+    if (!$path) {
+        return null;
+    }
+
+    // Detect environment
+    $disk = app()->environment('production') ? 's3' : 'public';
+
+    try {
+        // Check if file exists on the disk (return null if missing)
+        if (!Storage::disk($disk)->exists($path)) {
             return null;
         }
 
-        $disk = app()->environment('production') ? 's3' : 'public';
+        // If found, get the URL
+        $url = Storage::disk($disk)->url($path);
 
-        return Storage::disk($disk)->exists($path)
-            ? Storage::disk($disk)->url($path)
-            : null;
+        // Extra handling for cPanel/public storage issues
+        if ($disk === 'public') {
+            // Rewrite if Laravel generated a "storage/app/public" path
+            $url = str_replace('/storage/app/public', '/storage', $url);
+
+            // If symlink is broken/missing, fallback to manual asset() build
+            if (!file_exists(public_path('storage'))) {
+                $url = asset('storage/app/public/' . ltrim($path, '/'));
+            }
+        }
+
+        return $url;
+
+    } catch (\Exception $e) {
+        // Catch S3 misconfiguration or Flysystem errors → return null
+        return null;
     }
 }
 
