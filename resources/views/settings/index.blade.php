@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Website Settings')
+@section('header', 'Website Settings')
 
 @section('content')
     <div class="py-6">
@@ -69,7 +69,7 @@
                 </div>
 
                 <!-- Form -->
-                <form action="{{ route('settings.update') }}" method="POST" class="divide-y divide-gray-200">
+                <form action="{{ route('settings.update') }}" method="POST" enctype="multipart/form-data" class="divide-y divide-gray-200">
                     @csrf
 
                     <!-- General Settings -->
@@ -270,7 +270,7 @@
                                 </label>
                                 <div class="mt-1">
                                     <input type="email" name="support_email" id="support_email"
-                                        value="{{ old('support_email', $settings['support_email'] ?? 'support@example.com') }}"
+                                        value="{{ old('support_email', $settings['support_email'] ?? 'support@jaramarket.com') }}"
                                         class="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md @error('support_email') border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500 @enderror">
                                 </div>
                                 @error('support_email')
@@ -355,7 +355,7 @@
                                 </label>
                                 <div class="mt-1 relative rounded-md shadow-sm">
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <span class="text-gray-500 sm:text-sm">{{$settings['currency']}}</span>
+                                        <span class="text-gray-500 sm:text-sm">{{$settings['currency'] ?? '₦'}}</span>
                                     </div>
                                     <input type="number" name="shipping_fee" id="shipping_fee"
                                         value="{{ old('shipping_fee', $settings['shipping_fee'] ?? '5.99') }}"
@@ -380,11 +380,14 @@
                                             'bank_transfer' => 'Bank Transfer',
                                             'cash_on_delivery' => 'Cash on Delivery',
                                         ];
-                                        $savedMethods = old(
-                                            'payment_methods',
-                                            $settings['payment_methods'] ?? 'credit_card,paypal',
-                                        );
-                                        $savedMethodsArray = explode(',', $savedMethods);
+                                        $savedMethods = old('payment_methods', $settings['payment_methods'] ?? 'credit_card,paypal');
+
+                                        // Ensure $savedMethods is always an array
+                                        if (is_array($savedMethods)) {
+                                            $savedMethodsArray = $savedMethods;
+                                        } else {
+                                            $savedMethodsArray = explode(',', $savedMethods);
+                                        }
                                     @endphp
 
                                     @foreach ($paymentMethods as $value => $label)

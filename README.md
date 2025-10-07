@@ -34,6 +34,8 @@ Make sure you have:
 git clone https://github.com/JaraMarket/jaramarket.git
 cd jaramarket
 ```
+## GIT BRANCH
+fix/product-create
 
 Build and start containers:
 

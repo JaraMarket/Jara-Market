@@ -15,10 +15,10 @@ RUN apt-get update && apt-get install -y \
     supervisor \
     librdkafka-dev \
     default-mysql-client \
-    && docker-php-ext-install pdo pdo_mysql zip \
-    && pecl install rdkafka redis \
-    && docker-php-ext-enable rdkafka redis \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+ && docker-php-ext-install pdo pdo_mysql zip pcntl \
+ && pecl install rdkafka redis \
+ && docker-php-ext-enable rdkafka redis \
+ && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -36,7 +36,7 @@ RUN chmod +x /start.sh
 # Set working directory
 WORKDIR /var/www/html
 
-# Expose Apache port
+# Expose ports (Apache + Reverb)
 EXPOSE 80 6001
 
 # Start container

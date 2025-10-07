@@ -20,20 +20,23 @@ if [ ! -f ".env" ]; then
   cp .env.example .env
 fi
 
-php artisan key:generate --force
+php artisan key:generate --force || true
 php artisan config:clear
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
 # Run migrations & seeding
-php artisan migrate --force
-php artisan db:seed --force
+php artisan migrate --force || true
+php artisan db:seed --force || true
 
-# Ensure storage & cache permissions
-mkdir -p storage/logs bootstrap/cache
-chown -R www-data:www-data storage bootstrap/cache
-chmod -R 775 storage bootstrap/cache
+# Ensure storage, cache, and log permissions
+mkdir -p storage/logs bootstrap/cache /var/run/supervisor
+chown -R www-data:www-data storage bootstrap/cache /var/run/supervisor
+chmod -R 775 storage bootstrap/cache /var/run/supervisor
+
+# Make sure all log files can be deleted by the app
+find storage/logs -type f -exec chmod 664 {} \; || true
 
 echo "🚀 Starting Supervisor..."
-exec /usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf
+exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf

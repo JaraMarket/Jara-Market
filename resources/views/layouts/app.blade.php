@@ -7,7 +7,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <title>@yield('title') | {{ company('site_name', config('app.name')) }}</title>
+    <title>@yield('header') | {{ company('site_name', config('app.name')) }}</title>
     <link rel="icon" type="image/png" href="{{ get_media_url(company('favicon_logo')) }}">
 
     <!-- Fonts -->

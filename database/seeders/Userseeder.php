@@ -22,7 +22,6 @@ class Userseeder extends Seeder
                 'id' => 1,
                 'password'     => 'admin',
                 'firstname'    => 'admin',
-                'username'     => 'admin',
                 'lastname'     => 'admin',
                 'phone_number' => '07068628887',
                 'role'         => UserPermissionsEnum::ADMIN(),
