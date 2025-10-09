@@ -2,6 +2,7 @@
 /node_modules
 /public/build
 /public/hot
+.env
 .env.backup
 .phpactor.json
 .phpunit.result.cache
@@ -15,4 +16,4 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
-.env
+
