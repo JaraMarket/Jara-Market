@@ -18,7 +18,7 @@ RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
 # Install Redis and RdKafka from source (bypass PECL for reliability)
 RUN git clone --depth 1 https://github.com/phpredis/phpredis.git /usr/src/php/ext/redis \
- && git clone --depth 1 https://github.com/arnaud-lb/php-rdkafka.git /usr/src/php/ext/rdkafka \
+ && git clone --depth 1 --branch 6.0.4 https://github.com/arnaud-lb/php-rdkafka.git /usr/src/php/ext/rdkafka \
  && docker-php-ext-install redis rdkafka
 
 # Enable Apache Rewrite Module
