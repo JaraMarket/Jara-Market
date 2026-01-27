@@ -9,8 +9,17 @@ DB_USER=${DB_USERNAME:-root}
 DB_PASS=${DB_PASSWORD:-""}
 
 echo "⏳ Waiting for MySQL at ${DB_HOST}..."
-until mysql -h "${DB_HOST}" -u "${DB_USER}" --password="${DB_PASS}" -e "SELECT 1;" >/dev/null 2>&1; do
+TIMEOUT=60
+ELAPSED=0
+until mysql -h "${DB_HOST}" -u "${DB_USER}" --password="${DB_PASS}" -e "SELECT 1;" 2>&1 | tee /tmp/mysql_error.log | grep -q "1"; do
+  if [ $ELAPSED -ge $TIMEOUT ]; then
+    echo "❌ MySQL connection timeout after ${TIMEOUT}s"
+    echo "Last error:"
+    cat /tmp/mysql_error.log
+    exit 1
+  fi
   sleep 2
+  ELAPSED=$((ELAPSED + 2))
 done
 echo "✅ MySQL is up."
 
