@@ -3,8 +3,13 @@ set -e
 
 cd /var/www/html
 
-echo "⏳ Waiting for MySQL..."
-until mysql -h db -u root --password="" -e "SELECT 1;" >/dev/null 2>&1; do
+# Use environment variables from ECS Secrets Manager
+DB_HOST=${DB_HOST:-localhost}
+DB_USER=${DB_USERNAME:-root}
+DB_PASS=${DB_PASSWORD:-""}
+
+echo "⏳ Waiting for MySQL at ${DB_HOST}..."
+until mysql -h "${DB_HOST}" -u "${DB_USER}" --password="${DB_PASS}" -e "SELECT 1;" >/dev/null 2>&1; do
   sleep 2
 done
 echo "✅ MySQL is up."
