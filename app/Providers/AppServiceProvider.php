@@ -40,8 +40,13 @@ class AppServiceProvider extends ServiceProvider
             return Password::min(8)->letters()->mixedCase()->numbers()->symbols()->uncompromised();
         });
 
-        if (Schema::hasTable('settings')) {
-            $dbTimezone = Setting::where('key', 'timezone')->value('value');
+        try {
+            if (Schema::hasTable('settings')) {
+                $dbTimezone = Setting::where('key', 'timezone')->value('value');
+            }
+        } catch (\Exception $e) {
+            // Prevent crash if DB is unreachable (common in CI/ECS startup)
+            \Illuminate\Support\Facades\Log::error('AppServiceProvider: DB connection failed - ' . $e->getMessage());
         }
     
         // Fallback to config/app.php if DB value is missing
