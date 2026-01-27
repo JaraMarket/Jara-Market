@@ -34,7 +34,7 @@ WORKDIR /var/www/html
 COPY . .
 
 # Install PHP dependencies
-RUN composer install \
+RUN rm -f composer.lock && composer install \
     --no-dev \
     --optimize-autoloader \
     --no-interaction \
