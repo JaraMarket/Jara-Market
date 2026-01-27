@@ -11,7 +11,7 @@ DB_PASS=${DB_PASSWORD:-""}
 echo "⏳ Waiting for MySQL at ${DB_HOST}..."
 TIMEOUT=60
 ELAPSED=0
-until mysql -h "${DB_HOST}" -u "${DB_USER}" --password="${DB_PASS}" -e "SELECT 1;" 2>&1 | tee /tmp/mysql_error.log | grep -q "1"; do
+until mysql -h "${DB_HOST}" -u "${DB_USER}" --password="${DB_PASS}" --ssl-mode=DISABLED -e "SELECT 1;" 2>&1 | tee /tmp/mysql_error.log | grep -q "1"; do
   if [ $ELAPSED -ge $TIMEOUT ]; then
     echo "❌ MySQL connection timeout after ${TIMEOUT}s"
     echo "Last error:"
