@@ -3,25 +3,8 @@ set -e
 
 cd /var/www/html
 
-# Use environment variables from ECS Secrets Manager
-DB_HOST=${DB_HOST:-localhost}
-DB_USER=${DB_USERNAME:-root}
-DB_PASS=${DB_PASSWORD:-""}
-
-echo "⏳ Waiting for MySQL at ${DB_HOST}..."
-TIMEOUT=60
-ELAPSED=0
-until mysql -h "${DB_HOST}" -u "${DB_USER}" --password="${DB_PASS}" --skip-ssl -e "SELECT 1;" 2>&1 | tee /tmp/mysql_error.log | grep -q "1"; do
-  if [ $ELAPSED -ge $TIMEOUT ]; then
-    echo "❌ MySQL connection timeout after ${TIMEOUT}s"
-    echo "Last error:"
-    cat /tmp/mysql_error.log
-    exit 1
-  fi
-  sleep 2
-  ELAPSED=$((ELAPSED + 2))
-done
-echo "✅ MySQL is up."
+# Note: MySQL connection will be handled by Laravel when needed
+# No need to wait for MySQL during container startup
 
 # Install dependencies if needed
 if [ ! -d "vendor" ]; then
