@@ -89,9 +89,9 @@ jobs:
           # Remove unnecessary fields from task definition
           jq 'del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)' task-def.json > task-def-cleaned.json
           
-          # Update image in container definition
+          # Update image and ensure DB_CONNECTION is set
           jq --arg IMAGE "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" \
-             '.containerDefinitions[0].image = $IMAGE' \
+             '.containerDefinitions[0].image = $IMAGE | .containerDefinitions[0].environment += [{"name": "DB_CONNECTION", "value": "mysql"}]' \
              task-def-cleaned.json > task-def-updated.json
 
       - name: Register new task definition
